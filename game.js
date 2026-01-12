@@ -467,10 +467,11 @@ function spawnTraffic() {
 
 // --- INPUT HANDLER ---
 window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') state.keys.left = true;
-    if (e.key === 'ArrowRight') state.keys.right = true;
-    if (e.key === 'ArrowUp') state.keys.up = true;
-    if (e.key === 'ArrowDown') state.keys.down = true;
+    const k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') state.keys.left = true;
+    if (k === 'arrowright' || k === 'd') state.keys.right = true;
+    if (k === 'arrowup' || k === 'w') state.keys.up = true;
+    if (k === 'arrowdown' || k === 's') state.keys.down = true;
     if (e.key.toLowerCase() === 'c') {
         state.cameraIndex = (state.cameraIndex + 1) % CAMERA_VIEWS.length;
     }
@@ -480,10 +481,11 @@ window.addEventListener('keydown', (e) => {
     }
 });
 window.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft') state.keys.left = false;
-    if (e.key === 'ArrowRight') state.keys.right = false;
-    if (e.key === 'ArrowUp') state.keys.up = false;
-    if (e.key === 'ArrowDown') state.keys.down = false;
+    const k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') state.keys.left = false;
+    if (k === 'arrowright' || k === 'd') state.keys.right = false;
+    if (k === 'arrowup' || k === 'w') state.keys.up = false;
+    if (k === 'arrowdown' || k === 's') state.keys.down = false;
     if (e.key.toLowerCase() === 'h') {
         state.keys.horn = false;
     }
@@ -719,9 +721,16 @@ function update(dt) {
 
         // Tail lights effect
         if (playerCar) {
-            const tailLights = playerCar.children.filter(c => c.material && c.material.color.getHex() === 0xff0000);
+            // Fix: Filter ONLY small tail lights, not the car body
+            const tailLights = playerCar.children.filter(c => {
+                // Check if it is a mesh, red, AND small (to avoid scaling the car body)
+                return c.isMesh &&
+                    c.material &&
+                    c.material.color.getHex() === 0xff0000 &&
+                    c.geometry.parameters.width < 1.0;
+            });
             tailLights.forEach(tl => {
-                tl.material.color.setHex(state.keys.down ? 0xff3333 : 0xff0000); // Brighter/Whiter red
+                tl.material.color.setHex(state.keys.down ? 0xff3333 : 0xff0000);
                 tl.scale.z = state.keys.down ? 1.5 : 1;
             });
         }
@@ -774,9 +783,11 @@ function update(dt) {
             const length = car.userData.type === 'truck' ? 6 : 4;
             const width = 1.8;
 
-            if (dx < width * 0.8 && dz < length * 0.9) {
-                console.log("Game Over Collision");
+            // Updated collision bounds
+            if (dx < width * 0.9 && dz < length * 0.6) {
+                // console.log("CRASH! dx:", dx, "dz:", dz);
                 gameOver();
+                return; // Stop update to prevent multiple triggers
             }
 
             // Turn wheels
