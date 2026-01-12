@@ -412,57 +412,52 @@ body {
 
 
 /* Landscape Mobile Optimizations */
-@media (max-width: 900px) and (orientation: landscape) {
+/* Landscape Mobile Optimizations */
+@media (max-width: 1024px) and (orientation: landscape) {
     #start-screen {
-        justify-content: center;
-        /* Center vertically */
-        padding: 10px;
+        justify-content: space-evenly;
+        /* Better distribution */
+        padding: 5px;
         overflow: hidden;
-        /* Prevent scroll if possible */
     }
 
     .game-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        /* Smaller title */
         margin-bottom: 0px;
+        line-height: 1;
     }
 
-    .subtitle {
-        font-size: 0.8rem;
-        margin-bottom: 10px;
-    }
-
-    .car-selector-container {
-        margin-bottom: 10px;
-        width: 80%;
-        /* Constrain width */
-    }
-
-    .select-label {
-        font-size: 0.7rem;
-        margin-bottom: 5px;
-    }
-
-    /* Force 1 row for cars to save vertical space */
-    .car-grid {
-        grid-template-columns: repeat(6, 1fr);
-        gap: 5px;
-    }
-
-    .car-option {
-        padding: 0.3rem 0.2rem;
-        font-size: 0.6rem;
-        height: auto;
-    }
-
-    /* Hide hints completely */
+    /* Hide non-essential text */
+    .subtitle,
+    .select-label,
     .controls-hint {
         display: none !important;
     }
 
-    .primary-btn {
-        padding: 0.6rem 2.5rem;
-        font-size: 1.1rem;
+    .car-selector-container {
+        margin-bottom: 5px;
+        width: 90%;
         margin-top: 5px;
+    }
+
+    .car-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+    }
+
+    .car-option {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.7rem;
+        border-radius: 8px;
+    }
+
+    .primary-btn {
+        padding: 0.5rem 3rem;
+        font-size: 1.2rem;
+        margin-top: 0;
+        margin-bottom: 5px;
+        border-radius: 30px;
     }
 }
 
