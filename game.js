@@ -489,6 +489,72 @@ window.addEventListener('keyup', (e) => {
     }
 });
 
+// --- MOBILE CONTROLS ---
+function setupMobileControls() {
+    const bindBtn = (id, key) => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+
+        const start = (e) => {
+            e.preventDefault();
+            state.keys[key] = true;
+            btn.classList.add('active');
+        };
+        const end = (e) => {
+            e.preventDefault();
+            state.keys[key] = false;
+            btn.classList.remove('active');
+        };
+
+        // Touch
+        btn.addEventListener('touchstart', start, { passive: false });
+        btn.addEventListener('touchend', end, { passive: false });
+        // Mouse (for testing)
+        btn.addEventListener('mousedown', start);
+        btn.addEventListener('mouseup', end);
+        btn.addEventListener('mouseleave', end);
+    };
+
+    bindBtn('btn-left', 'left');
+    bindBtn('btn-right', 'right');
+    bindBtn('btn-gas', 'up');
+    bindBtn('btn-brake', 'down');
+
+    // Horn
+    const hornBtn = document.getElementById('btn-horn');
+    if (hornBtn) {
+        const honkStart = (e) => {
+            e.preventDefault();
+            state.keys.horn = true;
+            hornBtn.classList.add('active');
+            honkHorn();
+        };
+        const honkEnd = (e) => {
+            e.preventDefault();
+            state.keys.horn = false;
+            hornBtn.classList.remove('active');
+        };
+        hornBtn.addEventListener('touchstart', honkStart, { passive: false });
+        hornBtn.addEventListener('touchend', honkEnd, { passive: false });
+        hornBtn.addEventListener('mousedown', honkStart);
+        hornBtn.addEventListener('mouseup', honkEnd);
+    }
+
+    // Camera
+    const camBtn = document.getElementById('btn-cam');
+    if (camBtn) {
+        const toggleCam = (e) => {
+            e.preventDefault();
+            camBtn.classList.add('active');
+            state.cameraIndex = (state.cameraIndex + 1) % CAMERA_VIEWS.length;
+            setTimeout(() => camBtn.classList.remove('active'), 100);
+        };
+        camBtn.addEventListener('touchstart', toggleCam, { passive: false });
+        camBtn.addEventListener('mousedown', toggleCam);
+    }
+}
+setupMobileControls();
+
 function honkHorn() {
     if (!playerCar) return;
 

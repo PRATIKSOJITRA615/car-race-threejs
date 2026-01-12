@@ -277,3 +277,100 @@ body {
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+
+/* Mobile Controls */
+#mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    height: 180px;
+    padding: 0 30px;
+    display: none;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 100;
+}
+
+@media (max-width: 1024px) {
+    #mobile-controls {
+        display: flex;
+    }
+}
+
+.control-group {
+    pointer-events: auto;
+    display: flex;
+    gap: 20px;
+}
+
+.control-group.center {
+    flex-direction: row;
+    align-self: flex-start;
+    margin-top: 20px;
+    gap: 15px;
+}
+
+.touch-btn {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    backdrop-filter: blur(4px);
+    touch-action: none;
+    user-select: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
+.touch-btn:active,
+.touch-btn.active {
+    background: rgba(0, 242, 255, 0.4);
+    transform: scale(0.95);
+    border-color: var(--primary-color);
+}
+
+.touch-btn.small {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+    border-radius: 12px;
+}
+
+.control-group.right {
+    flex-direction: row;
+}
+
+#btn-gas {
+    background: rgba(0, 255, 100, 0.2);
+    border-color: rgba(0, 255, 100, 0.4);
+}
+
+#btn-gas:active {
+    background: rgba(0, 255, 100, 0.6);
+}
+
+#btn-brake {
+    background: rgba(255, 50, 50, 0.2);
+    border-color: rgba(255, 50, 50, 0.4);
+    width: 60px;
+    height: 60px;
+    align-self: flex-end;
+    margin-bottom: 10px;
+}
+
+#btn-brake:active {
+    background: rgba(255, 50, 50, 0.6);
+}
