@@ -760,16 +760,10 @@ function update(dt) {
         if (state.keys.up && state.speed < CONFIG.maxSpeed) {
             state.speed += acc * dt;
         } else if (state.keys.down) {
-            state.speed -= braking * dt; // Brake can reduce speed below 30
+            state.speed -= braking * dt;
         } else {
-            // Coasting / Auto-Cruise
-            if (state.speed > 30) {
-                state.speed -= friction * dt;
-                if (state.speed < 30) state.speed = 30;
-            } else if (state.speed < 30) {
-                state.speed += acc * dt; // Auto-accelerate back to 30
-                if (state.speed > 30) state.speed = 30;
-            }
+            // Coasting
+            state.speed -= friction * dt;
         }
 
         // Clamp speed
