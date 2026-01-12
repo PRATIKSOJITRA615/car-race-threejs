@@ -413,50 +413,56 @@ body {
 
 /* Landscape Mobile Optimizations */
 @media (max-width: 900px) and (orientation: landscape) {
+    #start-screen {
+        justify-content: center;
+        /* Center vertically */
+        padding: 10px;
+        overflow: hidden;
+        /* Prevent scroll if possible */
+    }
+
     .game-title {
-        font-size: 2.5rem;
-        /* Smaller title */
-        margin-bottom: 0.2rem;
+        font-size: 2rem;
+        margin-bottom: 0px;
     }
 
     .subtitle {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        margin-bottom: 10px;
     }
 
     .car-selector-container {
-        margin-bottom: 0.5rem;
+        margin-bottom: 10px;
+        width: 80%;
+        /* Constrain width */
     }
 
     .select-label {
         font-size: 0.7rem;
-        margin-bottom: 0.2rem;
+        margin-bottom: 5px;
     }
 
+    /* Force 1 row for cars to save vertical space */
     .car-grid {
-        gap: 0.5rem;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 5px;
     }
 
     .car-option {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.7rem;
+        padding: 0.3rem 0.2rem;
+        font-size: 0.6rem;
+        height: auto;
     }
 
+    /* Hide hints completely */
     .controls-hint {
-        display: none;
-        /* Hide hints on mobile to save space */
+        display: none !important;
     }
 
     .primary-btn {
-        padding: 0.8rem 2rem;
-        font-size: 1.2rem;
-    }
-
-    /* Ensure scrollability if still too big */
-    #start-screen {
-        overflow-y: auto;
-        justify-content: flex-start;
-        padding-top: 20px;
+        padding: 0.6rem 2.5rem;
+        font-size: 1.1rem;
+        margin-top: 5px;
     }
 }
 
