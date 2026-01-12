@@ -45,16 +45,19 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a12);
-scene.fog = new THREE.FogExp2(0x0a0a12, CONFIG.fogDensity);
+const isNight = false; // Set to true for night mode
+
+const skyColor = isNight ? 0x0a0a12 : 0x87CEEB;
+scene.background = new THREE.Color(skyColor);
+scene.fog = new THREE.FogExp2(skyColor, CONFIG.fogDensity);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 300);
 
 // --- LIGHTING ---
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+const ambientLight = new THREE.AmbientLight(0xffffff, isNight ? 0.6 : 1.1);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xfffaed, 1.2);
+const dirLight = new THREE.DirectionalLight(0xfffaed, isNight ? 1.2 : 1.5);
 dirLight.position.set(20, 50, 20);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 2048;
@@ -306,7 +309,7 @@ scene.add(road);
 
 // Environment (Grass/Ground)
 const groundGeom = new THREE.PlaneGeometry(200, 200);
-const groundMat = new THREE.MeshStandardMaterial({ color: 0x154f30, roughness: 1 });
+const groundMat = new THREE.MeshStandardMaterial({ color: isNight ? 0x154f30 : 0x4CAF50, roughness: 1 });
 const ground = new THREE.Mesh(groundGeom, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.1;
@@ -363,9 +366,10 @@ function createBuilding() {
     const depth = 10 + Math.random() * 15;
 
     const geom = new THREE.BoxGeometry(width, height, depth);
-    // Dark building colors
+    // Dark building colors for night, varying greys/whites for day
+    const lightness = isNight ? 0.1 : (Math.random() * 0.4 + 0.4);
     const mat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setHSL(Math.random() * 0.1 + 0.6, 0.5, 0.1),
+        color: new THREE.Color().setHSL(Math.random() * 0.1 + 0.6, 0.5, lightness),
         roughness: 0.2
     });
 
@@ -460,17 +464,19 @@ function spawnPlayer() {
     playerCar = createPlayerCar(state.selectedCar);
     playerCar.position.y = 0;
 
-    // Player Headlights (Real Light)
-    const spotLight = new THREE.SpotLight(0xffffff, 20); // High intensity
-    spotLight.position.set(0, 2, -1);
-    spotLight.target.position.set(0, 0, -40);
-    spotLight.angle = 0.6;
-    spotLight.penumbra = 0.5;
-    spotLight.castShadow = true;
-    spotLight.distance = 100; // Far range
+    // Player Headlights (Real Light) - Only at night
+    if (isNight) {
+        const spotLight = new THREE.SpotLight(0xffffff, 20); // High intensity
+        spotLight.position.set(0, 2, -1);
+        spotLight.target.position.set(0, 0, -40);
+        spotLight.angle = 0.6;
+        spotLight.penumbra = 0.5;
+        spotLight.castShadow = true;
+        spotLight.distance = 100; // Far range
 
-    playerCar.add(spotLight);
-    playerCar.add(spotLight.target);
+        playerCar.add(spotLight);
+        playerCar.add(spotLight.target);
+    }
 
     scene.add(playerCar);
 }
