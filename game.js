@@ -174,6 +174,27 @@ function createTruckMesh(color) {
         truckGroup.userData.wheels.push(wheelGroup);
     });
 
+    // Truck Lights
+    // Headlights
+    const hlGeom = new THREE.BoxGeometry(0.4, 0.3, 0.1);
+    const hlMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+    const hl1 = new THREE.Mesh(hlGeom, hlMat);
+    hl1.position.set(-0.8, 1.3, -2.51); // Front Left
+    const hl2 = new THREE.Mesh(hlGeom, hlMat);
+    hl2.position.set(0.8, 1.3, -2.51); // Front Right
+    truckGroup.add(hl1);
+    truckGroup.add(hl2);
+
+    // Taillights
+    const tlGeom = new THREE.BoxGeometry(0.4, 0.3, 0.1);
+    const tlMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const tl1 = new THREE.Mesh(tlGeom, tlMat);
+    tl1.position.set(-0.8, 1.5, 3.01); // Back Left cargo
+    const tl2 = new THREE.Mesh(tlGeom, tlMat);
+    tl2.position.set(0.8, 1.5, 3.01); // Back Right cargo
+    truckGroup.add(tl1);
+    truckGroup.add(tl2);
+
     return truckGroup;
 }
 
@@ -260,6 +281,16 @@ function createPlayerCar(type) {
     tl2.position.set(0.5, 0.6 + c.bodyH / 2 - 0.2, c.bodyL / 2 + 0.01);
     carGroup.add(tl1);
     carGroup.add(tl2);
+
+    // Headlights (Visual)
+    const hlGeom = new THREE.BoxGeometry(0.5, 0.2, 0.1);
+    const hlMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+    const hl1 = new THREE.Mesh(hlGeom, hlMat);
+    hl1.position.set(-0.5, 0.6 + c.bodyH / 2 - 0.2, -c.bodyL / 2 - 0.01);
+    const hl2 = new THREE.Mesh(hlGeom, hlMat);
+    hl2.position.set(0.5, 0.6 + c.bodyH / 2 - 0.2, -c.bodyL / 2 - 0.01);
+    carGroup.add(hl1);
+    carGroup.add(hl2);
 
     return carGroup;
 }
@@ -428,6 +459,19 @@ function spawnPlayer() {
     if (playerCar) scene.remove(playerCar);
     playerCar = createPlayerCar(state.selectedCar);
     playerCar.position.y = 0;
+
+    // Player Headlights (Real Light)
+    const spotLight = new THREE.SpotLight(0xffffff, 20); // High intensity
+    spotLight.position.set(0, 2, -1);
+    spotLight.target.position.set(0, 0, -40);
+    spotLight.angle = 0.6;
+    spotLight.penumbra = 0.5;
+    spotLight.castShadow = true;
+    spotLight.distance = 100; // Far range
+
+    playerCar.add(spotLight);
+    playerCar.add(spotLight.target);
+
     scene.add(playerCar);
 }
 spawnPlayer(); // Initial spawn for title screen
@@ -705,7 +749,7 @@ function update(dt) {
         // Manual Speed Control
         const acc = 15;
         const friction = 5;
-        const braking = 30;
+        const braking = 80; // Significantly stronger brakes
 
         if (state.keys.up && state.speed < CONFIG.maxSpeed) {
             state.speed += acc * dt;
