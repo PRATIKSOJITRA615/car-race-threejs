@@ -767,7 +767,7 @@ function update(dt) {
         }
 
         // Clamp speed
-        if (state.speed < 0) state.speed = 0;
+        if (state.speed < 30) state.speed = 30; // Minimum speed 30
 
         // Tail lights effect
         if (playerCar) {
