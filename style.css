@@ -1,4 +1,284 @@
-/* ... (Previous CSS) ... */
+:root {
+    --primary-color: #00f2ff;
+    --secondary-color: #ff0055;
+    --bg-dark: #0a0a12;
+    --text-light: #ffffff;
+    --glass-bg: rgba(20, 20, 30, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    overflow: hidden;
+    background-color: var(--bg-dark);
+    font-family: var(--font-main);
+    color: var(--text-light);
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+/* UI Layer */
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /* Let clicks pass through to canvas if needed, but buttons will re-enable them */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    transition: opacity 0.4s ease, visibility 0.4s;
+    pointer-events: auto;
+}
+
+.screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.game-title {
+    font-size: 5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(0, 242, 255, 0.5);
+    transform: skew(-5deg);
+}
+
+.highlight {
+    color: var(--secondary-color);
+    text-shadow: 0 0 30px rgba(255, 0, 85, 0.5);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+    opacity: 0.8;
+    margin-bottom: 3rem;
+    letter-spacing: 2px;
+}
+
+.controls-hint {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Car Selector */
+.car-selector-container {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.select-label {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    opacity: 0.6;
+    margin-bottom: 1rem;
+}
+
+.car-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.car-option {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.car-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--car-color);
+    opacity: 0.5;
+}
+
+.car-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.car-option.selected {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--car-color);
+    box-shadow: 0 0 15px var(--car-color);
+}
+
+.car-option.selected::before {
+    opacity: 1;
+}
+
+.key {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, var(--primary-color), #00c3cc);
+    border: none;
+    padding: 1.2rem 4rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--bg-dark);
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+}
+
+.primary-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(0, 242, 255, 0.6);
+}
+
+.primary-btn:active {
+    transform: scale(0.98);
+}
+
+/* HUD (Heads Up Display) */
+#hud {
+    background: none;
+    backdrop-filter: none;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 2rem;
+    pointer-events: none;
+}
+
+.score-container,
+.speed-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.score-container .label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    margin-bottom: 0.2rem;
+}
+
+#score-display {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.speed-container {
+    align-items: flex-end;
+}
+
+#speed-display {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--text-light);
+    line-height: 0.9;
+}
+
+.speed-container .unit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+/* Game Over Screen */
+#game-over-screen h2 {
+    font-size: 4rem;
+    color: var(--secondary-color);
+    text-shadow: 0 0 30px rgba(255, 0, 85, 0.6);
+    margin-bottom: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.final-score-box {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.final-score-box .label {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+#final-score {
+    font-size: 5rem;
+    font-weight: 800;
+    background: -webkit-linear-gradient(var(--text-light), var(--primary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+
 /* Mobile Controls */
 #mobile-controls {
     position: absolute;
