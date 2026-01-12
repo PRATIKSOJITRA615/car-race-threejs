@@ -783,11 +783,13 @@ function update(dt) {
             const length = car.userData.type === 'truck' ? 6 : 4;
             const width = 1.8;
 
-            // Updated collision bounds
-            if (dx < width * 0.9 && dz < length * 0.6) {
-                // console.log("CRASH! dx:", dx, "dz:", dz);
+            // Updated collision bounds - Broadened to prevent passing through
+            // dx < 2.2 means we hit if we are even partially in the same lane (Lane width 3.5)
+            // dz < length * 0.8 ensures we hit front/back bumpers
+            if (dx < 2.2 && dz < length * 0.8) {
+                console.log("CRASH! dx:", dx, "dz:", dz);
                 gameOver();
-                return; // Stop update to prevent multiple triggers
+                return;
             }
 
             // Turn wheels
