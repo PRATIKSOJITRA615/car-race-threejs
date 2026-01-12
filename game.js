@@ -766,8 +766,8 @@ function update(dt) {
             state.speed -= friction * dt;
         }
 
-        // Clamp speed
-        if (state.speed < 0) state.speed = 0;
+        // Clamp speed - Minimum 15 units (approx 30 KM/H on display)
+        if (state.speed < 15) state.speed = 15;
 
         // Tail lights effect
         if (playerCar) {
