@@ -837,6 +837,22 @@ function update(dt) {
             // dx < 2.2 means we hit if we are even partially in the same lane (Lane width 3.5)
             // dz < length * 0.8 ensures we hit front/back bumpers
             if (dx < 2.2 && dz < length * 0.8) {
+                // 1. Immunity at low speed (Stopped/Min Speed)
+                // OR Rear-end (Z > playerZ)
+                if (state.speed <= 16 || car.position.z > playerCar.position.z) {
+                    // "Bump" Effect
+                    // 1. Slow down traffic relative to player (Push traffic away / Move player back)
+                    // Actually, moving traffic -Z pushes it ahead of us (towards horizon)
+                    car.position.z -= 3.0;
+
+                    // 2. Slow player slightly (loss of momentum)
+                    state.speed = 15;
+
+                    // 3. Camera Shake for impact feedback
+                    camera.position.y += 0.5;
+                    return;
+                }
+
                 console.log("CRASH! dx:", dx, "dz:", dz);
                 gameOver();
                 return;
