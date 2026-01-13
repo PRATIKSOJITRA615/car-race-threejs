@@ -837,19 +837,24 @@ function update(dt) {
             // dx < 2.2 means we hit if we are even partially in the same lane (Lane width 3.5)
             // dz < length * 0.8 ensures we hit front/back bumpers
             if (dx < 2.2 && dz < length * 0.8) {
-                // 1. Immunity at low speed (Stopped/Min Speed)
-                // OR Rear-end (Z > playerZ)
-                if (state.speed <= 16 || car.position.z > playerCar.position.z) {
-                    // "Bump" Effect
-                    // 1. Slow down traffic relative to player (Push traffic away / Move player back)
-                    // Actually, moving traffic -Z pushes it ahead of us (towards horizon)
-                    car.position.z -= 3.0;
+                // 1. Immunity/Bump Logic
+                // If low speed OR the car is already "past" us (Z > 0)
+                if (state.speed <= 20 || car.position.z > playerCar.position.z) {
+                    // RESOLVE OVERLAP PHYSICALLY
 
-                    // 2. Slow player slightly (loss of momentum)
-                    state.speed = 15;
+                    // A. Speed Match: Kill momentum immediately so we don't phase through
+                    // Force player speed to match the car we hit (minus slight drag)
+                    state.speed = Math.max(15, carSpeed - 2);
 
-                    // 3. Camera Shake for impact feedback
-                    camera.position.y += 0.5;
+                    // B. Z-Bounce: Push traffic slightly away to clear the mesh overlap
+                    car.position.z -= 2.5;
+
+                    // C. X-Bounce: Nudge player laterally away from impact
+                    const pushDir = (playerCar.position.x < car.position.x) ? -1 : 1;
+                    playerCar.position.x += pushDir * 0.4;
+
+                    // Visual Shake
+                    camera.position.y += 0.2;
                     return;
                 }
 
