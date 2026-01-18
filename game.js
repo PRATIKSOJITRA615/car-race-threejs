@@ -56,17 +56,17 @@ let envState = {
     sunPosition: new THREE.Vector3(20, 50, 20)
 };
 
-const skyColor = isNight ? 0x0a0a12 : 0x87CEEB;
+const skyColor = envState.isNight ? 0x0a0a12 : 0x87CEEB;
 scene.background = new THREE.Color(skyColor);
 scene.fog = new THREE.FogExp2(skyColor, CONFIG.fogDensity);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 300);
 
 // --- LIGHTING ---
-const ambientLight = new THREE.AmbientLight(0xffffff, isNight ? 0.6 : 1.1);
+const ambientLight = new THREE.AmbientLight(0xffffff, envState.isNight ? 0.6 : 1.1);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xfffaed, isNight ? 1.2 : 1.5);
+const dirLight = new THREE.DirectionalLight(0xfffaed, envState.isNight ? 1.2 : 1.5);
 dirLight.position.set(20, 50, 20);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 2048;
@@ -1232,9 +1232,7 @@ function updateCoins(dt) {
         }
     }
 }
-// Hook this into update() - adding call line to main update
-// We need to inject "updateCoins(dt)" into the main update loop.
-// I'll update the previous replacement block to include it.
+
 
 
 
