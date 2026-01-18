@@ -869,6 +869,10 @@ function update(dt) {
         playerCar.rotation.y = THREE.MathUtils.lerp(playerCar.rotation.y, (state.keys.left ? 0.1 : (state.keys.right ? -0.1 : 0)), dt * 5);
 
         // Traffic Handling
+        state.timeSinceLastSpawn += dt;
+        // Spawn faster as we go faster
+        const spawnRate = CONFIG.trafficSpawnRate / (state.speed / 30);
+
         if (state.timeSinceLastSpawn > spawnRate) {
             if (Math.random() < 0.1) spawnCoin(); // 10% chance for coin
             spawnTraffic();
@@ -1087,7 +1091,67 @@ function updateEnvironment(dt) {
         const spot = playerCar.children.find(c => c.isSpotLight);
         if (spot) spot.intensity = envState.isNight ? 20 : 0;
     }
+
+    // Update Skyline Parallax
+    if (skyline) {
+        // Rotate slowly based on speed to simulate distance
+        skyline.rotation.y += state.speed * dt * 0.0005;
+    }
 }
+
+// Skyline Variable
+let skyline;
+
+function createSkyline() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    // Transparent sky
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fillRect(0, 0, 1024, 256);
+
+    // Draw buildings silhouette
+    ctx.fillStyle = '#111';
+    let x = 0;
+    while (x < 1024) {
+        const w = 20 + Math.random() * 50;
+        const h = 50 + Math.random() * 100;
+        ctx.fillRect(x, 256 - h, w, h);
+
+        // Windows
+        ctx.fillStyle = '#444';
+        if (Math.random() > 0.5) {
+            for (let wx = x + 5; wx < x + w - 5; wx += 10) {
+                for (let wy = 256 - h + 10; wy < 256 - 10; wy += 15) {
+                    if (Math.random() > 0.2) ctx.fillRect(wx, wy, 4, 8);
+                }
+            }
+        }
+        ctx.fillStyle = '#111'; // Reset for next building
+        x += w - 5; // Overlap slightly
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.repeat.set(2, 1);
+
+    const geom = new THREE.CylinderGeometry(180, 180, 80, 64, 1, true); // Open ended cylinder
+    const mat = new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        side: THREE.BackSide,
+        fog: false // Let it be seen through fog
+    });
+
+    skyline = new THREE.Mesh(geom, mat);
+    skyline.position.y = 10;
+    scene.add(skyline);
+}
+
+// Call init for skyline
+createSkyline();
 
 // 2. AUDIO SYSTEM (Procedural)
 const audioController = {
