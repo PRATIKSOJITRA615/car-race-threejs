@@ -249,6 +249,124 @@ body {
     color: var(--secondary-color);
 }
 
+#bomb-indicator {
+    color: #ff0000;
+    font-weight: 900;
+    font-size: 1.2rem;
+    animation: pulse 0.5s infinite;
+    margin-top: 5px;
+}
+
+#bomb-indicator.hidden {
+    display: none;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.05);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.coin-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.coin-container #coin-display {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffd700;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.coin-container .label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    margin-bottom: 0.2rem;
+}
+
+/* Mode Selector */
+.mode-selector-container {
+    margin-bottom: 2rem;
+    text-align: center;
+    width: 60%;
+}
+
+.mode-grid {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.mode-option {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.mode-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mode-option.selected {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+/* Audio Button */
+.icon-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 200;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+    pointer-events: auto;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
 /* Game Over Screen */
 #game-over-screen h2 {
     font-size: 4rem;

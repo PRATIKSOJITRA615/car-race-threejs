@@ -33,7 +33,12 @@ let state = {
     gameOver: false,
     distanceTraveled: 0,
     selectedCar: 'ferrari',
-    cameraIndex: 0
+    cameraIndex: 0,
+    coins: 0,
+    mode: 'classic', // 'classic' or 'bomb'
+    bombTimer: 0,
+    dayTime: 0, // 0 to 1 cycle
+    audioInitialized: false
 };
 
 // --- SCENE SETUP ---
@@ -45,7 +50,11 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-const isNight = false; // Set to true for night mode
+// Dynamic Environment State
+let envState = {
+    isNight: false,
+    sunPosition: new THREE.Vector3(20, 50, 20)
+};
 
 const skyColor = isNight ? 0x0a0a12 : 0x87CEEB;
 scene.background = new THREE.Color(skyColor);
@@ -309,7 +318,7 @@ scene.add(road);
 
 // Environment (Grass/Ground)
 const groundGeom = new THREE.PlaneGeometry(200, 200);
-const groundMat = new THREE.MeshStandardMaterial({ color: isNight ? 0x154f30 : 0x4CAF50, roughness: 1 });
+const groundMat = new THREE.MeshStandardMaterial({ color: 0x4CAF50, roughness: 1 });
 const ground = new THREE.Mesh(groundGeom, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.1;
@@ -367,7 +376,7 @@ function createBuilding() {
 
     const geom = new THREE.BoxGeometry(width, height, depth);
     // Dark building colors for night, varying greys/whites for day
-    const lightness = isNight ? 0.1 : (Math.random() * 0.4 + 0.4);
+    const lightness = envState.isNight ? 0.1 : (Math.random() * 0.4 + 0.4);
     const mat = new THREE.MeshStandardMaterial({
         color: new THREE.Color().setHSL(Math.random() * 0.1 + 0.6, 0.5, lightness),
         roughness: 0.2
@@ -464,19 +473,20 @@ function spawnPlayer() {
     playerCar = createPlayerCar(state.selectedCar);
     playerCar.position.y = 0;
 
-    // Player Headlights (Real Light) - Only at night
-    if (isNight) {
-        const spotLight = new THREE.SpotLight(0xffffff, 20); // High intensity
-        spotLight.position.set(0, 2, -1);
-        spotLight.target.position.set(0, 0, -40);
-        spotLight.angle = 0.6;
-        spotLight.penumbra = 0.5;
-        spotLight.castShadow = true;
-        spotLight.distance = 100; // Far range
+    // Player Headlights (Real Light) - Always add, toggle intensity in update
+    const spotLight = new THREE.SpotLight(0xffffff, 20); // High intensity
+    spotLight.position.set(0, 2, -1);
+    spotLight.target.position.set(0, 0, -40);
+    spotLight.angle = 0.6;
+    spotLight.penumbra = 0.5;
+    spotLight.castShadow = true;
+    spotLight.distance = 100; // Far range
+    // Initial State
+    spotLight.intensity = envState.isNight ? 20 : 0;
+    spotLight.isSpotLight = true; // Tag for update loop
 
-        playerCar.add(spotLight);
-        playerCar.add(spotLight.target);
-    }
+    playerCar.add(spotLight);
+    playerCar.add(spotLight.target);
 
     scene.add(playerCar);
 }
@@ -694,7 +704,19 @@ function startGame() {
     state.gameOver = false;
     state.speed = CONFIG.startSpeed;
     state.score = 0;
+    state.coins = 0;
+    state.bombTimer = 0; // Reset bomb timer
     state.distanceTraveled = 0; // Reset distance
+
+    // Init Audio if needed
+    if (!state.audioInitialized) {
+        audioController.init();
+        state.audioInitialized = true;
+    }
+    audioController.startEngine();
+
+    // Mode UI
+    document.getElementById('bomb-indicator').classList.add('hidden');
 
     startScreen.classList.add('hidden');
     hud.classList.remove('hidden');
@@ -728,12 +750,30 @@ function resetGame() {
     startGame();
 }
 
+// Mode Selector
+document.querySelectorAll('.mode-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+        document.querySelectorAll('.mode-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        state.mode = opt.dataset.mode;
+    });
+});
+
+// Audio Toggle
+document.getElementById('audio-btn').addEventListener('click', () => {
+    const isMuted = audioController.toggleMute();
+    document.getElementById('audio-btn').innerText = isMuted ? '🔇' : '🔊';
+});
+
 function gameOver() {
     state.isPlaying = false;
     state.gameOver = true;
     state.speed = 0;
+    audioController.stopEngine();
+    audioController.playCrash();
 
     finalScoreEl.innerText = Math.floor(state.score);
+    document.getElementById('final-coins').innerText = state.coins;
     hud.classList.add('hidden');
     gameOverScreen.classList.remove('hidden');
 }
@@ -750,6 +790,31 @@ function update(dt) {
         state.distanceTraveled += (state.speed * dt); // True distance for texture scroll
         scoreEl.innerText = Math.floor(state.score);
         speedEl.innerText = Math.floor(state.speed * 2); // Fake km/h conversion
+        document.getElementById('coin-display').innerText = state.coins;
+
+        // --- BOMB MODE LOGIC ---
+        if (state.mode === 'bomb' && state.speed > 5) {
+            const bombEl = document.getElementById('bomb-indicator');
+            // Speed limit 50 km/h (approx 25 units)
+            if (state.speed < 25) {
+                state.bombTimer += dt;
+                bombEl.innerText = `💣 EXPLOSION IN ${(3.0 - state.bombTimer).toFixed(1)}`;
+                bombEl.classList.remove('hidden');
+                if (state.bombTimer > 3.0) {
+                    gameOver();
+                }
+            } else {
+                state.bombTimer = 0;
+                bombEl.classList.add('hidden');
+            }
+        }
+
+        // --- DYNAMIC ENVIRONMENT ---
+        updateEnvironment(dt);
+        updateCoins(dt);
+
+        // --- AUDIO ---
+        audioController.updateEngine(state.speed);
 
         // Increase speed over time
         // Manual Speed Control
@@ -804,10 +869,8 @@ function update(dt) {
         playerCar.rotation.y = THREE.MathUtils.lerp(playerCar.rotation.y, (state.keys.left ? 0.1 : (state.keys.right ? -0.1 : 0)), dt * 5);
 
         // Traffic Handling
-        state.timeSinceLastSpawn += dt;
-        // Spawn faster as we go faster
-        const spawnRate = CONFIG.trafficSpawnRate / (state.speed / 30);
         if (state.timeSinceLastSpawn > spawnRate) {
+            if (Math.random() < 0.1) spawnCoin(); // 10% chance for coin
             spawnTraffic();
             state.timeSinceLastSpawn = 0;
         }
@@ -989,6 +1052,191 @@ function animate() {
 
     renderer.render(scene, camera);
 }
+
+// --- NEW SYSTEMS IMPLEMENTATION ---
+
+// 1. DYNAMIC ENVIRONMENT
+function updateEnvironment(dt) {
+    state.dayTime += dt * 0.05; // Slow cycle
+    const cycle = Math.sin(state.dayTime); // -1 to 1
+
+    // Interpolate colors
+    // Day: Sky 0x87CEEB, Light 1.5
+    // Night: Sky 0x0a0a12, Light 0.2
+
+    // Map cycle to 0..1
+    const t = (cycle + 1) / 2;
+
+    const dayColor = new THREE.Color(0x87CEEB);
+    const nightColor = new THREE.Color(0x0a0a12);
+
+    const currentSky = nightColor.clone().lerp(dayColor, t);
+    scene.background = currentSky;
+    scene.fog.color = currentSky;
+
+    // Sun/Moon movement
+    dirLight.position.x = Math.sin(state.dayTime) * 50;
+    dirLight.position.y = Math.cos(state.dayTime) * 50;
+    dirLight.intensity = Math.max(0.2, t * 1.5);
+
+    envState.isNight = t < 0.3;
+
+    // Toggle headlights based on darkness
+    if (playerCar) {
+        // Find spotlight
+        const spot = playerCar.children.find(c => c.isSpotLight);
+        if (spot) spot.intensity = envState.isNight ? 20 : 0;
+    }
+}
+
+// 2. AUDIO SYSTEM (Procedural)
+const audioController = {
+    ctx: null,
+    osc: null,
+    gain: null,
+    isMuted: false,
+
+    init: function () {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+
+        // Engine Sound (Sawtooth)
+        this.osc = this.ctx.createOscillator();
+        this.osc.type = 'sawtooth';
+        this.osc.frequency.value = 100;
+
+        this.gain = this.ctx.createGain();
+        this.gain.gain.value = 0;
+
+        this.osc.connect(this.gain);
+        this.gain.connect(this.ctx.destination);
+        this.osc.start();
+    },
+
+    startEngine: function () {
+        if (!this.ctx) return;
+        this.ctx.resume();
+        this.gain.gain.setTargetAtTime(0.1, this.ctx.currentTime, 0.1);
+    },
+
+    stopEngine: function () {
+        if (!this.gain) return;
+        this.gain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
+    },
+
+    updateEngine: function (speed) {
+        if (!this.osc || this.isMuted) return;
+        // Pitch based on speed
+        const baseFreq = 60;
+        this.osc.frequency.setTargetAtTime(baseFreq + (speed * 3), this.ctx.currentTime, 0.1);
+    },
+
+    playCoinSound: function () {
+        if (!this.ctx || this.isMuted) return;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(1000, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(2000, this.ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+
+        o.connect(g);
+        g.connect(this.ctx.destination);
+        o.start();
+        o.stop(this.ctx.currentTime + 0.3);
+    },
+
+    playCrashSound: function () {
+        if (!this.ctx || this.isMuted) return;
+        // Simple noise buffer would be better, but let's use low osc logic for now
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'triangle'; // Rougher sound
+        o.frequency.setValueAtTime(100, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.5);
+        g.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+
+        // LFO for roughness
+        const lfo = this.ctx.createOscillator();
+        lfo.frequency.value = 50;
+        const lfoGain = this.ctx.createGain();
+        lfoGain.gain.value = 50;
+        lfo.connect(lfoGain);
+        lfoGain.connect(o.frequency);
+        lfo.start();
+        lfo.stop(this.ctx.currentTime + 0.5);
+
+        o.connect(g);
+        g.connect(this.ctx.destination);
+        o.start();
+        o.stop(this.ctx.currentTime + 0.5);
+    },
+
+    toggleMute: function () {
+        this.isMuted = !this.isMuted;
+        if (this.gain) {
+            this.gain.gain.value = this.isMuted ? 0 : 0.1;
+        }
+        return this.isMuted;
+    }
+};
+
+// 3. COINS
+const coins = [];
+const coinGeom = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
+const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.2 });
+
+function spawnCoin() {
+    const laneIndex = Math.floor(Math.random() * 3);
+    const laneX = state.lanes[laneIndex];
+
+    const coin = new THREE.Mesh(coinGeom, coinMat);
+    coin.rotation.x = Math.PI / 2;
+    coin.rotation.z = Math.PI / 2; // Face camera
+    coin.position.set(laneX, 1, -100);
+    coin.castShadow = true;
+
+    scene.add(coin);
+    coins.push(coin);
+}
+
+// Update Coins in main loop (called from update)
+// Check collisions
+function updateCoins(dt) {
+    for (let i = coins.length - 1; i >= 0; i--) {
+        const c = coins[i];
+        c.position.z += state.speed * dt; // Coins don't move, we do (relative)
+        c.rotation.x += dt * 3; // Spin
+
+        // Remove if passed
+        if (c.position.z > 20) {
+            scene.remove(c);
+            coins.splice(i, 1);
+            continue;
+        }
+
+        // Collision
+        const dx = Math.abs(playerCar.position.x - c.position.x);
+        const dz = Math.abs(playerCar.position.z - c.position.z);
+        if (dx < 2.0 && dz < 2.0) {
+            // Collect
+            state.coins += 10;
+            state.score += 50;
+            audioController.playCoinSound();
+            scene.remove(c);
+            coins.splice(i, 1);
+
+            // Visual Pop?
+        }
+    }
+}
+// Hook this into update() - adding call line to main update
+// We need to inject "updateCoins(dt)" into the main update loop.
+// I'll update the previous replacement block to include it.
+
+
 
 // Initial setup
 playerCar.position.y = 0;
