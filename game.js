@@ -750,6 +750,30 @@ function resetGame() {
     startGame();
 }
 
+document.getElementById('menu-btn').addEventListener('click', goToMenu);
+
+function goToMenu() {
+    // Clear traffic
+    trafficCars.forEach(car => scene.remove(car));
+    trafficCars.length = 0;
+
+    // Reset Player
+    playerCar.position.x = 0;
+    state.isPlaying = false;
+    state.gameOver = false;
+    state.speed = 0;
+
+    // UI
+    gameOverScreen.classList.add('hidden');
+    hud.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+
+    // Camera to idle
+    state.cameraIndex = 0;
+    spawnPlayer();
+    playerCar.rotation.y = 0.5; // Preview angle
+}
+
 // Mode Selector
 document.querySelectorAll('.mode-option').forEach(opt => {
     opt.addEventListener('click', () => {
@@ -1249,47 +1273,75 @@ const audioController = {
 
 // 3. COINS
 const coins = [];
-const coinGeom = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
-const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.2 });
+const coinGeom = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 32); // Higher polys
+const coinMat = new THREE.MeshStandardMaterial({
+    color: 0xffd700,
+    metalness: 1.0,
+    roughness: 0.1,
+    emissive: 0xaa8800,
+    emissiveIntensity: 0.4
+});
 
 function spawnCoin() {
     const laneIndex = Math.floor(Math.random() * 3);
     const laneX = state.lanes[laneIndex];
 
     const coin = new THREE.Mesh(coinGeom, coinMat);
+    // Cylinder is flat on Y. Rotate to stand on edge.
+    // X = 90 deg -> Face is Front/Back
+    // Y = 0 -> Vertical
     coin.rotation.x = Math.PI / 2;
-    coin.rotation.z = Math.PI / 2; // Face camera
+    coin.rotation.z = Math.PI / 2; // Initial Face adjustment
     coin.position.set(laneX, 1, -100);
     coin.castShadow = true;
 
-    scene.add(coin);
-    coins.push(coin);
+    // We want to spin around World Y.
+    // Since we rotated X/Z, local axes are messy. Let's group or just rotate X (which is now world Y-ish?)
+    // Actually, Cylinder starts vertical (Y).
+    // Rotate Z=90 -> Lying on side, facing X.
+    // Rotate Y (Global) -> Spinning.
+
+    // Let's reset rotations:
+    // Cylinder vertical.
+    // Rotate X 90 -> Face pointing Z.
+    // Spin around Y axis? No, that would wheel it.
+
+    // Simplest: Create a wrapper group for spinning
+    const group = new THREE.Group();
+    group.add(coin);
+    coin.rotation.x = Math.PI / 2; // Make it face camera (flat side Z)
+    // Now we rotate the GROUP around Y.
+
+    group.position.set(laneX, 1, -100);
+    scene.add(group);
+    coins.push(group);
 }
 
 // Update Coins in main loop (called from update)
 // Check collisions
 function updateCoins(dt) {
     for (let i = coins.length - 1; i >= 0; i--) {
-        const c = coins[i];
-        c.position.z += state.speed * dt; // Coins don't move, we do (relative)
-        c.rotation.x += dt * 3; // Spin
+        const cGroup = coins[i]; // It is now a group
+        cGroup.position.z += state.speed * dt;
+        cGroup.rotation.y += dt * 3; // Spin around vertical axis (Y)
 
         // Remove if passed
-        if (c.position.z > 20) {
-            scene.remove(c);
+        if (cGroup.position.z > 20) {
+            scene.remove(cGroup);
             coins.splice(i, 1);
             continue;
         }
 
         // Collision
-        const dx = Math.abs(playerCar.position.x - c.position.x);
-        const dz = Math.abs(playerCar.position.z - c.position.z);
+        // Collision (Note: cGroup contains the coin mesh at 0,0,0 relative to group)
+        const dx = Math.abs(playerCar.position.x - cGroup.position.x);
+        const dz = Math.abs(playerCar.position.z - cGroup.position.z);
         if (dx < 2.0 && dz < 2.0) {
             // Collect
             state.coins += 10;
             state.score += 50;
             audioController.playCoinSound();
-            scene.remove(c);
+            scene.remove(cGroup);
             coins.splice(i, 1);
 
             // Visual Pop?
