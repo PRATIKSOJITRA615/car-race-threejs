@@ -688,6 +688,7 @@ const finalScoreEl = document.getElementById('final-score');
 
 document.getElementById('start-btn').addEventListener('click', startGame);
 document.getElementById('restart-btn').addEventListener('click', resetGame);
+document.getElementById('home-btn').addEventListener('click', goHome);
 
 function startGame() {
     state.isPlaying = true;
@@ -726,6 +727,28 @@ function resetGame() {
     playerCar.position.x = 0;
 
     startGame();
+}
+
+function goHome() {
+    // Clear traffic
+    trafficCars.forEach(car => scene.remove(car));
+    trafficCars.length = 0;
+
+    // Reset player car position and tilt
+    if (playerCar) {
+        playerCar.position.x = 0;
+        playerCar.rotation.y = 0.5; // Angled for preview
+    }
+
+    state.isPlaying = false;
+    state.gameOver = false;
+    state.speed = 0;
+    state.score = 0;
+
+    // Toggle Screens
+    startScreen.classList.remove('hidden');
+    hud.classList.add('hidden');
+    gameOverScreen.classList.add('hidden');
 }
 
 function gameOver() {
