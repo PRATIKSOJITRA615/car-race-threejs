@@ -807,61 +807,8 @@ function setupMobileControls() {
         btn.addEventListener('mouseleave', end);
     };
 
-    const setupSteeringWheel = () => {
-        const wheel = document.getElementById('steering-wheel');
-        if (!wheel) return;
-
-        let startAngle = 0;
-        let isRotating = false;
-        const rect = wheel.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        const handleStart = (e) => {
-            e.preventDefault();
-            isRotating = true;
-            handleMove(e);
-        };
-
-        const handleMove = (e) => {
-            if (!isRotating) return;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-            // Calculate angle from center
-            const dx = clientX - centerX;
-            const dy = clientY - centerY;
-            let angle = Math.atan2(dy, dx) * (180 / Math.PI);
-            
-            // Normalize so top is 0 and it goes -180 to 180
-            angle = (angle + 90) % 360;
-            if (angle > 180) angle -= 360;
-
-            // Clamp rotation (e.g., max 90 degrees left/right)
-            const clampedAngle = Math.max(-90, Math.min(90, angle));
-            wheel.style.transform = `rotate(${clampedAngle}deg)`;
-
-            // Map to keys
-            state.keys.left = clampedAngle < -15;
-            state.keys.right = clampedAngle > 15;
-        };
-
-        const handleEnd = () => {
-            isRotating = false;
-            wheel.style.transform = `rotate(0deg)`;
-            state.keys.left = false;
-            state.keys.right = false;
-        };
-
-        wheel.addEventListener('touchstart', handleStart, { passive: false });
-        wheel.addEventListener('touchmove', handleMove, { passive: false });
-        wheel.addEventListener('touchend', handleEnd, { passive: false });
-        wheel.addEventListener('mousedown', handleStart);
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('mouseup', handleEnd);
-    };
-
-    setupSteeringWheel();
+    bindBtn('btn-left', 'left');
+    bindBtn('btn-right', 'right');
     bindBtn('btn-gas', 'up');
     bindBtn('btn-brake', 'down');
 
