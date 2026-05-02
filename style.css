@@ -520,3 +520,56 @@ body {
 .small-btn:active {
     background: rgba(0, 242, 255, 0.4);
 }
+
+/* Portrait Mobile Optimizations */
+@media (max-width: 600px) and (orientation: portrait) {
+    .game-title {
+        font-size: 2.5rem;
+    }
+    .subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+    .car-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    .car-option {
+        padding: 0.8rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    .primary-btn {
+        padding: 1rem 2.5rem;
+        font-size: 1.2rem;
+    }
+    #hud {
+        padding: 1rem;
+    }
+    .score-container, .speed-container {
+        padding: 0.5rem 1rem;
+    }
+    #score-display { font-size: 1.5rem; }
+    #speed-display { font-size: 2rem; }
+    
+    .left-controls {
+        left: 10px;
+        bottom: 10px;
+    }
+    .right-controls {
+        right: 10px;
+        bottom: 10px;
+    }
+    .arrow-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+    .pedal-btn.brake { width: 60px; height: 50px; }
+    .pedal-btn.gas { width: 50px; height: 100px; }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 601px) and (max-width: 1024px) {
+    .game-title { font-size: 3.5rem; }
+    .car-grid { grid-template-columns: repeat(3, 1fr); }
+}

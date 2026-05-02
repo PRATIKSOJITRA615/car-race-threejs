@@ -1202,11 +1202,26 @@ function update(dt) {
 }
 
 function resize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    camera.aspect = width / height;
+    
+    // Adjust FOV for portrait mode to see the road better
+    if (width < height) {
+        camera.fov = 75; 
+    } else {
+        camera.fov = 60;
+    }
+    
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 }
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => {
+    setTimeout(resize, 200);
+});
 
 function animate() {
     requestAnimationFrame(animate);
