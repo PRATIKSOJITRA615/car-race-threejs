@@ -539,33 +539,50 @@ body {
         font-size: 0.8rem;
     }
     .primary-btn {
-        padding: 1rem 2.5rem;
-        font-size: 1.2rem;
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
     }
     #hud {
-        padding: 1rem;
+        padding: 0.5rem;
     }
     .score-container, .speed-container {
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 0.8rem;
+        border-radius: 10px;
+        min-width: 80px;
     }
-    #score-display { font-size: 1.5rem; }
-    #speed-display { font-size: 2rem; }
+    .score-container .label, .speed-container .unit {
+        font-size: 0.6rem;
+    }
+    #score-display { font-size: 1.2rem; }
+    #speed-display { font-size: 1.5rem; }
     
     .left-controls {
         left: 10px;
         bottom: 10px;
+        gap: 10px;
     }
     .right-controls {
         right: 10px;
         bottom: 10px;
+        gap: 10px;
     }
     .arrow-btn {
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
     }
-    .pedal-btn.brake { width: 60px; height: 50px; }
-    .pedal-btn.gas { width: 50px; height: 100px; }
+    .pedal-btn.brake { width: 50px; height: 40px; }
+    .pedal-btn.gas { width: 40px; height: 80px; }
+    
+    .action-row {
+        gap: 5px;
+    }
+    .small-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+    }
 }
 
 /* Tablet Optimizations */
