@@ -940,6 +940,7 @@ function startGame() {
     startScreen.classList.add('hidden');
     hud.classList.remove('hidden');
     gameOverScreen.classList.add('hidden');
+    document.getElementById('mobile-controls').style.display = 'flex';
 
     spawnPlayer();
 }
@@ -989,6 +990,7 @@ function goHome() {
     startScreen.classList.remove('hidden');
     hud.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
+    document.getElementById('mobile-controls').style.display = 'none';
 }
 
 function gameOver() {
@@ -999,6 +1001,7 @@ function gameOver() {
     finalScoreEl.innerText = Math.floor(state.score);
     hud.classList.add('hidden');
     gameOverScreen.classList.remove('hidden');
+    document.getElementById('mobile-controls').style.display = 'none';
 }
 
 // --- GAME LOOP ---

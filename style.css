@@ -590,3 +590,27 @@ body {
     .game-title { font-size: 3.5rem; }
     .car-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Game Over Screen Mobile Fix */
+@media (max-width: 600px) {
+    #game-over-screen h2 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .final-score-box {
+        margin-bottom: 1.5rem;
+    }
+    #final-score {
+        font-size: 3.5rem;
+    }
+    .button-group {
+        flex-direction: column;
+        width: 85%;
+        gap: 0.8rem;
+    }
+    .secondary-btn, .primary-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+}
