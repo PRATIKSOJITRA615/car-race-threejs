@@ -13,7 +13,8 @@
     <script type="importmap">
         {
             "imports": {
-                "three": "./lib/three.module.js"
+                "three": "./lib/three.module.js",
+                "three/addons/": "./lib/"
             }
         }
     </script>
@@ -39,6 +40,7 @@
                         <div class="car-option" data-car="bmw" style="--car-color: #dddddd">BMW</div>
                         <div class="car-option" data-car="mercedes" style="--car-color: #aaaaaa">MERCEDES</div>
                         <div class="car-option" data-car="toyota" style="--car-color: #ffffff">TOYOTA</div>
+                        <div class="car-option" data-car="truck" style="--car-color: #ff8800">TRUCK</div>
                     </div>
                 </div>
 
@@ -79,9 +81,18 @@
             <!-- Mobile Controls -->
             <div id="mobile-controls">
                 <div class="control-group left-controls">
-                    <div class="steer-row">
-                        <button id="btn-left" class="touch-btn arrow-btn">◄</button>
-                        <button id="btn-right" class="touch-btn arrow-btn">►</button>
+                    <div class="steering-container">
+                        <div id="steering-wheel">
+                            <div class="wheel-icon">
+                                <svg viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="8"/>
+                                    <circle cx="50" cy="50" r="10" fill="currentColor"/>
+                                    <rect x="46" y="10" width="8" height="30" fill="currentColor"/>
+                                    <rect x="10" y="46" width="30" height="8" fill="currentColor"/>
+                                    <rect x="60" y="46" width="30" height="8" fill="currentColor"/>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                     <div class="action-row">
                         <button id="btn-horn" class="touch-btn small-btn">H</button>

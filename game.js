@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { OBJLoader } from './lib/OBJLoader.js';
+import { MTLLoader } from './lib/MTLLoader.js';
+
 
 // --- CONFIGURATION ---
 const CONFIG = {
@@ -43,8 +46,40 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
+
+// --- ENVIRONMENT MAP FOR REFLECTIONS ---
+// Create a basic procedural environment map to make metallic cars look "propar"
+function createEnvironment() {
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+    
+    // Create a simple colored scene for the environment
+    const envScene = new THREE.Scene();
+    const envGeometry = new THREE.BoxGeometry(100, 100, 100);
+    const envMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide });
+    const envMesh = new THREE.Mesh(envGeometry, envMaterial);
+    envScene.add(envMesh);
+    
+    // Add some colored lights to the environment for interesting reflections
+    const blueLight = new THREE.Mesh(new THREE.SphereGeometry(10), new THREE.MeshBasicMaterial({ color: 0x0088ff }));
+    blueLight.position.set(50, 20, 0);
+    envScene.add(blueLight);
+    
+    const orangeLight = new THREE.Mesh(new THREE.SphereGeometry(10), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
+    orangeLight.position.set(-50, 20, 0);
+    envScene.add(orangeLight);
+
+    const envMap = pmremGenerator.fromScene(envScene).texture;
+    scene.environment = envMap;
+    // scene.background = envMap; // Optional: show the env in background
+    pmremGenerator.dispose();
+}
+createEnvironment();
 const isNight = false; // Set to true for night mode
 
 const skyColor = isNight ? 0x0a0a12 : 0x87CEEB;
@@ -69,6 +104,20 @@ dirLight.shadow.camera.right = 20;
 dirLight.shadow.camera.top = 20;
 dirLight.shadow.camera.bottom = -20;
 scene.add(dirLight);
+
+// Add a back light for better silhouettes (Edge lighting)
+const backLight = new THREE.DirectionalLight(0xffffff, 1.0);
+backLight.position.set(-20, 10, -50);
+scene.add(backLight);
+
+// Add a hemi light for better ground/sky balance
+const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x444444, 0.8);
+scene.add(hemiLight);
+
+// Add a studio top-light for that "premium" reflection on the car roof
+const topLight = new THREE.DirectionalLight(0xffffff, 2.0);
+topLight.position.set(0, 20, 0);
+scene.add(topLight);
 
 // --- ASSETS GENERATION ---
 // Helper to create simple textures procedurally to avoid external dependencies failing
@@ -118,7 +167,7 @@ function createRoadTexture() {
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(1, 10); // Repeat texture 10 times along the road length
     texture.rotation = Math.PI; // Fix direction if needed
-    texture.anisotropy = 16;
+    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
     return texture;
 }
 
@@ -214,7 +263,8 @@ function createPlayerCar(type) {
         bugatti: { color: 0x0077ff, bodyW: 2.1, bodyH: 0.7, bodyL: 4.4, cabinW: 1.4, cabinH: 0.6 },
         bmw: { color: 0xdddddd, bodyW: 1.8, bodyH: 0.75, bodyL: 4.0, cabinW: 1.4, cabinH: 0.65 },
         mercedes: { color: 0xaaaaaa, bodyW: 1.8, bodyH: 0.7, bodyL: 4.1, cabinW: 1.4, cabinH: 0.6 },
-        toyota: { color: 0xffffff, bodyW: 1.7, bodyH: 0.7, bodyL: 3.8, cabinW: 1.3, cabinH: 0.6 }
+        toyota: { color: 0xffffff, bodyW: 1.7, bodyH: 0.7, bodyL: 3.8, cabinW: 1.3, cabinH: 0.6 },
+        truck: { color: 0x00ff00, bodyW: 2.2, bodyH: 2.5, bodyL: 6.0, cabinW: 2.0, cabinH: 1.8 }
     };
 
     const c = config[type] || config.ferrari;
@@ -297,6 +347,140 @@ function createPlayerCar(type) {
 
     return carGroup;
 }
+
+// --- 3D MODEL LOADING ---
+const models = {};
+const objLoader = new OBJLoader();
+const mtlLoader = new MTLLoader();
+
+function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
+    const onModelLoaded = (object) => {
+        // --- 1. Orientation Correction ---
+        const tempBox = new THREE.Box3();
+        object.traverse(child => {
+            if (child.isMesh) {
+                child.geometry.computeBoundingBox();
+                const childBox = child.geometry.boundingBox.clone().applyMatrix4(child.matrixWorld);
+                tempBox.union(childBox);
+            }
+        });
+        const tempSize = tempBox.getSize(new THREE.Vector3());
+        
+        // If the model is "lying down" on its side or facing the wrong way
+        // We want Length (Z) > Width (X) > Height (Y) for our car setup.
+        if (tempSize.y > tempSize.x && tempSize.y > tempSize.z) {
+            object.rotation.x = -Math.PI / 2; // Rotate if it was exported standing up
+        } else if (tempSize.x > tempSize.z) {
+            object.rotation.y = Math.PI / 2; // Rotate if it was facing sideways
+        }
+        
+        // Flip 180 degrees as most models import facing the camera
+        object.rotation.y += Math.PI;
+        
+        // --- 2. Material Enhancement ---
+        object.traverse(child => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                
+                // Enhance material for a "propar" look
+                if (child.material) {
+                    // Convert to MeshStandardMaterial if it isn't (MTLLoader often uses MeshPhongMaterial)
+                    const oldMat = Array.isArray(child.material) ? child.material[0] : child.material;
+                    
+                    // Determine if this part should have the primary car color
+                    let meshColor = oldMat.color || new THREE.Color(0x888888);
+                    const lowName = oldMat.name.toLowerCase();
+                    
+                    if (lowName.includes('body') || lowName.includes('paint') || lowName.includes('car_color')) {
+                        meshColor = new THREE.Color(primaryColor || 0xffffff);
+                    }
+
+                    const newMat = new THREE.MeshStandardMaterial({
+                        color: meshColor,
+                        map: oldMat.map || null,
+                        roughness: 0.4,
+                        metalness: 0.5,
+                    });
+                    
+                    // If the material name contains "glass", make it transparent
+                    if (oldMat.name.toLowerCase().includes('glass') || oldMat.name.toLowerCase().includes('wind')) {
+                        newMat.transparent = true;
+                        newMat.opacity = 0.5;
+                        newMat.metalness = 1.0;
+                        newMat.roughness = 0.1;
+                    }
+                    
+                    // If it's the body color, make it shine
+                    if (oldMat.name.toLowerCase().includes('body')) {
+                        newMat.metalness = 0.8;
+                        newMat.roughness = 0.2;
+                    }
+
+
+                    child.material = newMat;
+                }
+            }
+        });
+
+        // Update box after rotation for final scaling
+        object.updateMatrixWorld(true); 
+        const box = new THREE.Box3();
+        object.traverse(child => {
+            if (child.isMesh) {
+                if (!child.geometry.boundingBox) child.geometry.computeBoundingBox();
+                const childBox = child.geometry.boundingBox.clone();
+                childBox.applyMatrix4(child.matrixWorld);
+                box.union(childBox);
+            }
+        });
+        
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+
+        console.log(`Model Dimensions [${name}]:`, size);
+
+        // Ensure we have a valid size
+        if (size.z === 0) size.z = 1;
+
+        const scale = targetLength / size.z;
+        object.scale.set(scale, scale, scale);
+
+        // Position it so it sits on the ground (y=0) and is centered
+        object.position.set(
+            -center.x * scale,
+            -box.min.y * scale,
+            -center.z * scale
+        );
+
+        const wrapper = new THREE.Group();
+        wrapper.add(object);
+        wrapper.userData.type = 'player';
+        wrapper.userData.wheels = []; 
+
+        models[name] = wrapper;
+        console.log(`Model loaded & optimized: ${name}`);
+
+        if (!state.isPlaying && state.selectedCar === name) {
+            spawnPlayer();
+        }
+    };
+
+    if (mtlPath) {
+        mtlLoader.load(mtlPath, (materials) => {
+            materials.preload();
+            objLoader.setMaterials(materials);
+            objLoader.load(objPath, onModelLoaded);
+        });
+    } else {
+        objLoader.setMaterials(null);
+        objLoader.load(objPath, onModelLoaded);
+    }
+}
+
+// Start loading all models
+loadGameModel('truck', './untitled_trianglefaced.obj', './untitled_trianglefaced.mtl', 6.0, 0xff8800);
+
 
 // --- OBJECTS ---
 // Road
@@ -461,18 +645,64 @@ function spawnParticle(pos) {
 let playerCar; // Will be created on start
 function spawnPlayer() {
     if (playerCar) scene.remove(playerCar);
-    playerCar = createPlayerCar(state.selectedCar);
+
+    const config = {
+        ferrari: { bodyW: 1.9, bodyL: 4.2 },
+        lamborghini: { bodyW: 2.0, bodyL: 4.3 },
+        bugatti: { bodyW: 2.1, bodyL: 4.4 },
+        bmw: { bodyW: 1.8, bodyL: 4.0 },
+        mercedes: { bodyW: 1.8, bodyL: 4.1 },
+        toyota: { bodyW: 1.7, bodyL: 3.8 },
+        truck: { bodyW: 2.2, bodyL: 6.0 }
+    };
+
+    const c = config[state.selectedCar] || config.ferrari;
+    
+    if (models[state.selectedCar]) {
+        playerCar = models[state.selectedCar].clone();
+        // Traverse and ensure standard materials are used for consistent look
+        playerCar.traverse(child => {
+            if (child.isMesh && child.material) {
+                // If the model was loaded, it already had material enhancement in loadGameModel
+            }
+        });
+    } else {
+        playerCar = createPlayerCar(state.selectedCar);
+    }
+    
+    playerCar.userData.width = c.bodyW;
+    playerCar.userData.length = c.bodyL;
+    
     playerCar.position.y = 0;
+    playerCar.position.z = 0;
+    
+    // Add a spotlight to the player car for better depth - ONLY AT NIGHT
+    if (isNight) {
+        const headLight = new THREE.SpotLight(0xffffff, 100, 50, Math.PI / 4, 0.3, 1);
+        headLight.position.set(0, 1.5, -c.bodyL / 2);
+        headLight.target.position.set(0, 1, -c.bodyL / 2 - 20);
+        playerCar.add(headLight);
+        playerCar.add(headLight.target);
+        playerCar.userData.headLight = headLight; // Store for "dipar"
+    } else {
+        // Create a weak light for "dipar" in day mode
+        const diparLight = new THREE.SpotLight(0xffffff, 0, 50, Math.PI / 4, 0.3, 1);
+        diparLight.position.set(0, 1.5, -c.bodyL / 2);
+        diparLight.target.position.set(0, 1, -c.bodyL / 2 - 20);
+        playerCar.add(diparLight);
+        playerCar.add(diparLight.target);
+        playerCar.userData.headLight = diparLight;
+    }
 
     // Player Headlights (Real Light) - Only at night
     if (isNight) {
-        const spotLight = new THREE.SpotLight(0xffffff, 20); // High intensity
+        const spotLight = new THREE.SpotLight(0xffffff, 20);
         spotLight.position.set(0, 2, -1);
         spotLight.target.position.set(0, 0, -40);
         spotLight.angle = 0.6;
         spotLight.penumbra = 0.5;
         spotLight.castShadow = true;
-        spotLight.distance = 100; // Far range
+        spotLight.distance = 100;
 
         playerCar.add(spotLight);
         playerCar.add(spotLight.target);
@@ -529,6 +759,16 @@ window.addEventListener('keydown', (e) => {
         state.keys.horn = true;
         honkHorn();
     }
+    if (e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 'l') {
+        if (playerCar && playerCar.userData.headLight) {
+            playerCar.userData.headLight.intensity = 200;
+            setTimeout(() => {
+                if (playerCar && playerCar.userData.headLight) {
+                    playerCar.userData.headLight.intensity = isNight ? 100 : 0;
+                }
+            }, 150);
+        }
+    }
 });
 window.addEventListener('keyup', (e) => {
     const k = e.key.toLowerCase();
@@ -567,8 +807,61 @@ function setupMobileControls() {
         btn.addEventListener('mouseleave', end);
     };
 
-    bindBtn('btn-left', 'left');
-    bindBtn('btn-right', 'right');
+    const setupSteeringWheel = () => {
+        const wheel = document.getElementById('steering-wheel');
+        if (!wheel) return;
+
+        let startAngle = 0;
+        let isRotating = false;
+        const rect = wheel.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const handleStart = (e) => {
+            e.preventDefault();
+            isRotating = true;
+            handleMove(e);
+        };
+
+        const handleMove = (e) => {
+            if (!isRotating) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            // Calculate angle from center
+            const dx = clientX - centerX;
+            const dy = clientY - centerY;
+            let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            
+            // Normalize so top is 0 and it goes -180 to 180
+            angle = (angle + 90) % 360;
+            if (angle > 180) angle -= 360;
+
+            // Clamp rotation (e.g., max 90 degrees left/right)
+            const clampedAngle = Math.max(-90, Math.min(90, angle));
+            wheel.style.transform = `rotate(${clampedAngle}deg)`;
+
+            // Map to keys
+            state.keys.left = clampedAngle < -15;
+            state.keys.right = clampedAngle > 15;
+        };
+
+        const handleEnd = () => {
+            isRotating = false;
+            wheel.style.transform = `rotate(0deg)`;
+            state.keys.left = false;
+            state.keys.right = false;
+        };
+
+        wheel.addEventListener('touchstart', handleStart, { passive: false });
+        wheel.addEventListener('touchmove', handleMove, { passive: false });
+        wheel.addEventListener('touchend', handleEnd, { passive: false });
+        wheel.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+    };
+
+    setupSteeringWheel();
     bindBtn('btn-gas', 'up');
     bindBtn('btn-brake', 'down');
 
@@ -799,8 +1092,9 @@ function update(dt) {
                 // Check if it is a mesh, red, AND small (to avoid scaling the car body)
                 return c.isMesh &&
                     c.material &&
+                    c.material.color &&
                     c.material.color.getHex() === 0xff0000 &&
-                    c.geometry.parameters.width < 1.0;
+                    c.geometry && c.geometry.parameters && c.geometry.parameters.width < 1.0;
             });
             tailLights.forEach(tl => {
                 tl.material.color.setHex(state.keys.down ? 0xff3333 : 0xff0000);
@@ -853,13 +1147,11 @@ function update(dt) {
             const dx = Math.abs(playerCar.position.x - car.position.x);
             const dz = Math.abs(playerCar.position.z - car.position.z);
 
-            const length = car.userData.type === 'truck' ? 6 : 4;
-            const width = 1.8;
+            const trafficLength = car.userData.type === 'truck' ? 6 : 4;
+            const playerLength = playerCar.userData.length || 4;
+            const combinedLength = (trafficLength + playerLength) / 2;
 
-            // Updated collision bounds - Broadened to prevent passing through
-            // dx < 2.2 means we hit if we are even partially in the same lane (Lane width 3.5)
-            // dz < length * 0.8 ensures we hit front/back bumpers
-            if (dx < 2.2 && dz < length * 0.8) {
+            if (dx < 2.2 && dz < combinedLength * 0.8) {
                 // 1. Immunity at low speed (Stopped/Min Speed)
                 // OR Rear-end (Z > playerZ)
                 if (state.speed <= 16 || car.position.z > playerCar.position.z) {
