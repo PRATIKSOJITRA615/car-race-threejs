@@ -102,64 +102,7 @@ body {
     opacity: 0.9;
 }
 
-/* Car Selector */
-.car-selector-container {
-    margin-bottom: 2rem;
-    text-align: center;
-}
 
-.select-label {
-    font-size: 0.9rem;
-    letter-spacing: 2px;
-    opacity: 0.6;
-    margin-bottom: 1rem;
-}
-
-.car-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.car-option {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.car-option::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--car-color);
-    opacity: 0.5;
-}
-
-.car-option:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-.car-option.selected {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: var(--car-color);
-    box-shadow: 0 0 15px var(--car-color);
-}
-
-.car-option.selected::before {
-    opacity: 1;
-}
 
 .key {
     background: rgba(255, 255, 255, 0.1);
@@ -335,6 +278,10 @@ body {
     display: flex;
     gap: 20px;
     align-items: flex-end;
+}
+
+#mobile-controls {
+    display: none;
 }
 
 /* Left controls: Arrows */
@@ -530,14 +477,7 @@ body {
         font-size: 1rem;
         margin-bottom: 2rem;
     }
-    .car-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-    }
-    .car-option {
-        padding: 0.8rem 0.5rem;
-        font-size: 0.8rem;
-    }
+
     .primary-btn {
         padding: 0.8rem 2rem;
         font-size: 1rem;
@@ -588,7 +528,7 @@ body {
 /* Tablet Optimizations */
 @media (min-width: 601px) and (max-width: 1024px) {
     .game-title { font-size: 3.5rem; }
-    .car-grid { grid-template-columns: repeat(3, 1fr); }
+
 }
 
 /* Game Over Screen Mobile Fix */

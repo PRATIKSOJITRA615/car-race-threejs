@@ -9,8 +9,8 @@ const CONFIG = {
     roadLength: 200, // Visual length of road segment
     laneCount: 3,
     startSpeed: 30, // Units per second
-    maxSpeed: 80,
-    acceleration: 5,
+    maxSpeed: 110,
+    acceleration: 6,
     lateralSpeed: 15,
     cameraOffset: new THREE.Vector3(0, 5, 10),
     cameraLookAt: new THREE.Vector3(0, 0, -5),
@@ -35,7 +35,7 @@ let state = {
     keys: { left: false, right: false, up: false, down: false, horn: false },
     gameOver: false,
     distanceTraveled: 0,
-    selectedCar: 'ferrari',
+    selectedCar: 'toyota',
     cameraIndex: 0
 };
 
@@ -940,25 +940,14 @@ function startGame() {
     startScreen.classList.add('hidden');
     hud.classList.remove('hidden');
     gameOverScreen.classList.add('hidden');
-    document.getElementById('mobile-controls').style.display = 'flex';
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        document.getElementById('mobile-controls').style.display = 'flex';
+    }
 
     spawnPlayer();
 }
 
-// Car Selector Logic
-document.querySelectorAll('.car-option').forEach(opt => {
-    opt.addEventListener('click', () => {
-        // Remove active class
-        document.querySelectorAll('.car-option').forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
 
-        state.selectedCar = opt.dataset.car;
-
-        // Update preview
-        spawnPlayer();
-        playerCar.rotation.y = 0.5; // Angled for preview
-    });
-});
 
 function resetGame() {
     // Clear traffic
@@ -1019,12 +1008,15 @@ function update(dt) {
 
         // Increase speed over time
         // Manual Speed Control
-        const acc = 15;
+        const acc = 6;
         const friction = 5;
         const braking = 80; // Significantly stronger brakes
 
-        if (state.keys.up && state.speed < CONFIG.maxSpeed) {
-            state.speed += acc * dt;
+        if (state.keys.up) {
+            if (state.speed < CONFIG.maxSpeed) {
+                state.speed += acc * dt;
+                if (state.speed > CONFIG.maxSpeed) state.speed = CONFIG.maxSpeed;
+            }
         } else if (state.keys.down) {
             state.speed -= braking * dt;
         } else {
