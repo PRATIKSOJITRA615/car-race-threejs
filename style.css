@@ -27,9 +27,14 @@
     user-select: none;
 }
 
-body {
-    /* Prevents scrollbars and handles viewport bounds on mobile and desktop wrappers */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    position: fixed; /* Prevents scroll rubber-banding on iOS/Safari */
+    touch-action: none; /* Prevents double-tap zoom & gesture interference */
     background-color: var(--bg-dark);
     font-family: var(--font-main);
     color: var(--text-light);
@@ -40,8 +45,8 @@ body {
    ========================================================================== */
 #game-container {
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
 }
 
 #game-canvas {
