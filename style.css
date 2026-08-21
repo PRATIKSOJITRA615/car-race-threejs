@@ -1,27 +1,43 @@
+/* ==========================================================================
+   CSS DESIGN SYSTEM AND VARIABLES
+   ========================================================================== */
 :root {
-    --primary-color: #00f2ff;
-    --secondary-color: #ff0055;
-    --bg-dark: #0a0a12;
-    --text-light: #ffffff;
-    --glass-bg: rgba(20, 20, 30, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Color Palette: High-contrast neon theme suitable for arcade/sci-fi styling */
+    --primary-color: #00f2ff;       /* Electric Cyan: primary focus, accents, and highlights */
+    --secondary-color: #ff0055;     /* Hot Pink: warnings, active states, and score numbers */
+    --bg-dark: #0a0a12;             /* Deep Cyber Navy: dark background base */
+    --text-light: #ffffff;          /* Off-white: body text & primary readability */
+    
+    /* UI Glassmorphism Spec */
+    --glass-bg: rgba(20, 20, 30, 0.6);       /* Semi-transparent dark card fill */
+    --glass-border: rgba(255, 255, 255, 0.1); /* Subtle border for depth separation */
+    
+    /* Typography */
     --font-main: 'Outfit', sans-serif;
 }
 
+/* ==========================================================================
+   GLOBAL RESET & BASICS
+   ========================================================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* Prevents default browser selection overlays during intense screen tapping/clicking */
     user-select: none;
 }
 
 body {
+    /* Prevents scrollbars and handles viewport bounds on mobile and desktop wrappers */
     overflow: hidden;
     background-color: var(--bg-dark);
     font-family: var(--font-main);
     color: var(--text-light);
 }
 
+/* ==========================================================================
+   PRIMARY LAYOUT CONTAINERS
+   ========================================================================== */
 #game-container {
     position: relative;
     width: 100vw;
@@ -35,21 +51,24 @@ body {
     outline: none;
 }
 
-/* UI Layer */
+/* ==========================================================================
+   USER INTERFACE (UI) OVERLAY LAYER
+   ========================================================================== */
 #ui-layer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    /* Let pointer events fall through to the canvas underneath, unless overridden by buttons */
     pointer-events: none;
-    /* Let clicks pass through to canvas if needed, but buttons will re-enable them */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
+/* Base style for full-screen UI panels/menus (e.g. Start Screen, Game Over Screen) */
 .screen {
     position: absolute;
     width: 100%;
@@ -61,15 +80,20 @@ body {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     transition: opacity 0.4s ease, visibility 0.4s;
+    /* Explicitly capture click events on interactive UI screens */
     pointer-events: auto;
 }
 
+/* Hidden helper class to fade out screens gracefully */
 .screen.hidden {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
 }
 
+/* ==========================================================================
+   TYPOGRAPHY & BRANDING
+   ========================================================================== */
 .game-title {
     font-size: 5rem;
     font-weight: 800;
@@ -77,9 +101,11 @@ body {
     letter-spacing: -2px;
     margin-bottom: 0.5rem;
     text-shadow: 0 0 30px rgba(0, 242, 255, 0.5);
+    /* Distorts title for a dynamic, racing feel */
     transform: skew(-5deg);
 }
 
+/* Highlighting key elements using secondary neon */
 .highlight {
     color: var(--secondary-color);
     text-shadow: 0 0 30px rgba(255, 0, 85, 0.5);
@@ -93,6 +119,7 @@ body {
     letter-spacing: 2px;
 }
 
+/* Overlay showing instructions/keyboard layout hints */
 .controls-hint {
     display: flex;
     align-items: center;
@@ -101,8 +128,6 @@ body {
     font-size: 1.2rem;
     opacity: 0.9;
 }
-
-
 
 .key {
     background: rgba(255, 255, 255, 0.1);
@@ -113,6 +138,9 @@ body {
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 }
 
+/* ==========================================================================
+   BUTTONS & CONTROLS
+   ========================================================================== */
 .primary-btn {
     background: linear-gradient(135deg, var(--primary-color), #00c3cc);
     border: none;
@@ -137,7 +165,34 @@ body {
     transform: scale(0.98);
 }
 
-/* HUD (Heads Up Display) */
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    padding: 1.2rem 3rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-light);
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    backdrop-filter: blur(5px);
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.secondary-btn:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================================================
+   HUD (HEADS UP DISPLAY)
+   ========================================================================== */
 #hud {
     background: none;
     backdrop-filter: none;
@@ -145,6 +200,7 @@ body {
     flex-direction: row;
     align-items: flex-start;
     padding: 2rem;
+    /* Do not block raycasting & clicks in viewport */
     pointer-events: none;
 }
 
@@ -192,7 +248,9 @@ body {
     color: var(--secondary-color);
 }
 
-/* Game Over Screen */
+/* ==========================================================================
+   GAME OVER SCREEN
+   ========================================================================== */
 #game-over-screen h2 {
     font-size: 4rem;
     color: var(--secondary-color);
@@ -227,37 +285,15 @@ body {
     margin-top: 1rem;
 }
 
-.secondary-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--glass-border);
-    padding: 1.2rem 3rem;
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: var(--text-light);
-    border-radius: 50px;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-    backdrop-filter: blur(5px);
-}
-
-.secondary-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-    border-color: rgba(255, 255, 255, 0.5);
-}
-
-.secondary-btn:active {
-    transform: scale(0.98);
-}
+/* ==========================================================================
+   MOBILE ONSCREEN CONTROLS
+   ========================================================================== */
 #mobile-controls {
     position: absolute;
     bottom: 20px;
     left: 0;
     width: 100%;
     height: 100%;
-    /* Cover full screen for positioning, but pointer-events handled */
     padding: 20px;
     display: none;
     justify-content: space-between;
@@ -266,7 +302,7 @@ body {
     z-index: 100;
 }
 
-/* Show on mobile landscape primarily, or just small screens */
+/* Show controls only when viewport is under 1024px width */
 @media (max-width: 1024px) {
     #mobile-controls {
         display: flex;
@@ -280,11 +316,7 @@ body {
     align-items: flex-end;
 }
 
-#mobile-controls {
-    display: none;
-}
-
-/* Left controls: Arrows */
+/* Specific position modifiers for controls positioning overlay */
 .left-controls {
     position: absolute;
     bottom: 30px;
@@ -292,6 +324,15 @@ body {
     gap: 30px;
 }
 
+.right-controls {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 20px;
+}
+
+/* On-screen control buttons base */
 .touch-btn {
     background: transparent;
     border: 2px solid rgba(255, 255, 255, 0.5);
@@ -316,59 +357,44 @@ body {
     border-color: #fff;
 }
 
-/* Arrow specific */
+/* Direction Arrow Buttons styling */
 .arrow-btn {
     width: 80px;
     height: 80px;
     font-size: 3rem;
     border-radius: 50%;
-    /* Image shows vague shapes, but circles or just arrows work. */
     border: none;
-    /* Reference often has no border for arrows, just the icon. Let's try semi-transparent shape. */
     background: rgba(0, 0, 0, 0.2);
-    /* Slight backing */
 }
 
-/* Right controls: Pedals */
-.right-controls {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-    display: flex;
-    gap: 20px;
-}
-
+/* Gas and Brake Pedals styling */
 .pedal-btn {
     border-radius: 10px;
-    font-size: 0;
-    /* Hide text, just shape */
+    font-size: 0; /* Hide default placeholder text */
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2));
     border: 2px solid rgba(255, 255, 255, 0.4);
 }
 
-/* Brake: Wider, shorter */
+/* Brake: wider and semi-red tinted style */
 .pedal-btn.brake {
     width: 80px;
     height: 60px;
     background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M4 4h16v16H4z"/></svg>');
-    /* Simple icon placeholder or just logic */
     background-size: 30%;
     background-repeat: no-repeat;
     background-position: center;
     background-color: rgba(255, 50, 50, 0.2);
 }
 
-/* Gas: Taller, narrower */
+/* Gas/Accelerator: taller and semi-green tinted style */
 .pedal-btn.gas {
     width: 60px;
     height: 120px;
-    /* Tall pedal */
     background-color: rgba(50, 255, 100, 0.2);
     align-self: flex-end;
-    /* Align bottom */
 }
 
-/* Pedal markings (simulate the dots in image) */
+/* Visual dot textures on pedals */
 .pedal-btn.gas::after {
     content: '::::';
     color: rgba(255, 255, 255, 0.5);
@@ -385,25 +411,59 @@ body {
     letter-spacing: 5px;
 }
 
+/* ==========================================================================
+   MOBILE CONTROLS LAYOUT ADJUSTMENTS
+   ========================================================================== */
+.left-controls {
+    flex-direction: column-reverse; /* Put steering row and auxiliary controls together */
+    align-items: flex-start;
+    gap: 15px;
+}
 
-/* Landscape Mobile Optimizations */
+.steer-row {
+    display: flex;
+    gap: 20px;
+}
+
+.action-row {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+}
+
+/* Auxiliary control buttons (e.g. camera, horn buttons) */
+.small-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.small-btn:active {
+    background: rgba(0, 242, 255, 0.4);
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN MEDIA QUERIES
+   ========================================================================== */
+
 /* Landscape Mobile Optimizations */
 @media (max-width: 1024px) and (orientation: landscape) {
     #start-screen {
         justify-content: space-evenly;
-        /* Better distribution */
         padding: 5px;
         overflow: hidden;
     }
 
     .game-title {
         font-size: 1.8rem;
-        /* Smaller title */
         margin-bottom: 0px;
         line-height: 1;
     }
 
-    /* Hide non-essential text */
+    /* Hide non-essential layout strings to fit small landscape viewports */
     .subtitle,
     .select-label,
     .controls-hint {
@@ -434,38 +494,6 @@ body {
         margin-bottom: 5px;
         border-radius: 30px;
     }
-}
-
-/* Mobile Controls Layout Updates */
-.left-controls {
-    flex-direction: column-reverse;
-    /* Action buttons above arrows */
-    align-items: flex-start;
-    gap: 15px;
-}
-
-.steer-row {
-    display: flex;
-    gap: 20px;
-}
-
-.action-row {
-    display: flex;
-    gap: 10px;
-    margin-left: 10px;
-}
-
-.small-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 1rem;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.small-btn:active {
-    background: rgba(0, 242, 255, 0.4);
 }
 
 /* Portrait Mobile Optimizations */
@@ -528,10 +556,9 @@ body {
 /* Tablet Optimizations */
 @media (min-width: 601px) and (max-width: 1024px) {
     .game-title { font-size: 3.5rem; }
-
 }
 
-/* Game Over Screen Mobile Fix */
+/* Game Over Screen Mobile Specific Adjustments */
 @media (max-width: 600px) {
     #game-over-screen h2 {
         font-size: 2.5rem;
