@@ -926,6 +926,34 @@ const scoreEl = document.getElementById('score-display');
 const speedEl = document.getElementById('speed-display');
 const finalScoreEl = document.getElementById('final-score');
 
+function shouldShowMobileControls() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobileUA = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isSmallScreen = window.innerWidth <= 1024;
+    const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    
+    return isMobileUA || (hasTouch && (isSmallScreen || hasCoarsePointer));
+}
+
+function initializeResponsiveControls() {
+    const isMobile = shouldShowMobileControls();
+    const keyboardHint = document.querySelector('.keyboard-hint');
+    const mobileHint = document.querySelector('.mobile-hint');
+    
+    if (keyboardHint) {
+        keyboardHint.style.display = isMobile ? 'none' : 'flex';
+    }
+    if (mobileHint) {
+        mobileHint.style.display = isMobile ? 'block' : 'none';
+    }
+    
+    document.getElementById('mobile-controls').style.display = 'none';
+}
+
+// Call on startup
+initializeResponsiveControls();
+
 document.getElementById('start-btn').addEventListener('click', startGame);
 document.getElementById('restart-btn').addEventListener('click', resetGame);
 document.getElementById('home-btn').addEventListener('click', goHome);
@@ -940,8 +968,11 @@ function startGame() {
     startScreen.classList.add('hidden');
     hud.classList.remove('hidden');
     gameOverScreen.classList.add('hidden');
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    
+    if (shouldShowMobileControls()) {
         document.getElementById('mobile-controls').style.display = 'flex';
+    } else {
+        document.getElementById('mobile-controls').style.display = 'none';
     }
 
     spawnPlayer();
@@ -1212,6 +1243,9 @@ function resize() {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Dynamically adjust interface buttons & hints on viewport changes
+    initializeResponsiveControls();
 }
 window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', () => {
