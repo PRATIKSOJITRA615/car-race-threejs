@@ -57,19 +57,19 @@ const scene = new THREE.Scene();
 function createEnvironment() {
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
-    
+
     // Create a simple colored scene for the environment
     const envScene = new THREE.Scene();
     const envGeometry = new THREE.BoxGeometry(100, 100, 100);
     const envMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide });
     const envMesh = new THREE.Mesh(envGeometry, envMaterial);
     envScene.add(envMesh);
-    
+
     // Add some colored lights to the environment for interesting reflections
     const blueLight = new THREE.Mesh(new THREE.SphereGeometry(10), new THREE.MeshBasicMaterial({ color: 0x0088ff }));
     blueLight.position.set(50, 20, 0);
     envScene.add(blueLight);
-    
+
     const orangeLight = new THREE.Mesh(new THREE.SphereGeometry(10), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
     orangeLight.position.set(-50, 20, 0);
     envScene.add(orangeLight);
@@ -365,7 +365,7 @@ function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
             }
         });
         const tempSize = tempBox.getSize(new THREE.Vector3());
-        
+
         // If the model is "lying down" on its side or facing the wrong way
         // We want Length (Z) > Width (X) > Height (Y) for our car setup.
         if (tempSize.y > tempSize.x && tempSize.y > tempSize.z) {
@@ -373,25 +373,25 @@ function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
         } else if (tempSize.x > tempSize.z) {
             object.rotation.y = Math.PI / 2; // Rotate if it was facing sideways
         }
-        
+
         // Flip 180 degrees as most models import facing the camera
         object.rotation.y += Math.PI;
-        
+
         // --- 2. Material Enhancement ---
         object.traverse(child => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
-                
+
                 // Enhance material for a "propar" look
                 if (child.material) {
                     // Convert to MeshStandardMaterial if it isn't (MTLLoader often uses MeshPhongMaterial)
                     const oldMat = Array.isArray(child.material) ? child.material[0] : child.material;
-                    
+
                     // Determine if this part should have the primary car color
                     let meshColor = oldMat.color || new THREE.Color(0x888888);
                     const lowName = oldMat.name.toLowerCase();
-                    
+
                     if (lowName.includes('body') || lowName.includes('paint') || lowName.includes('car_color')) {
                         meshColor = new THREE.Color(primaryColor || 0xffffff);
                     }
@@ -402,7 +402,7 @@ function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
                         roughness: 0.4,
                         metalness: 0.5,
                     });
-                    
+
                     // If the material name contains "glass", make it transparent
                     if (oldMat.name.toLowerCase().includes('glass') || oldMat.name.toLowerCase().includes('wind')) {
                         newMat.transparent = true;
@@ -410,7 +410,7 @@ function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
                         newMat.metalness = 1.0;
                         newMat.roughness = 0.1;
                     }
-                    
+
                     // If it's the body color, make it shine
                     if (oldMat.name.toLowerCase().includes('body')) {
                         newMat.metalness = 0.8;
@@ -424,7 +424,7 @@ function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
         });
 
         // Update box after rotation for final scaling
-        object.updateMatrixWorld(true); 
+        object.updateMatrixWorld(true);
         const box = new THREE.Box3();
         object.traverse(child => {
             if (child.isMesh) {
@@ -434,7 +434,7 @@ function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
                 box.union(childBox);
             }
         });
-        
+
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
@@ -456,7 +456,7 @@ function loadGameModel(name, objPath, mtlPath, targetLength, primaryColor) {
         const wrapper = new THREE.Group();
         wrapper.add(object);
         wrapper.userData.type = 'player';
-        wrapper.userData.wheels = []; 
+        wrapper.userData.wheels = [];
 
         models[name] = wrapper;
         console.log(`Model loaded & optimized: ${name}`);
@@ -657,7 +657,7 @@ function spawnPlayer() {
     };
 
     const c = config[state.selectedCar] || config.ferrari;
-    
+
     if (models[state.selectedCar]) {
         playerCar = models[state.selectedCar].clone();
         // Traverse and ensure standard materials are used for consistent look
@@ -669,13 +669,13 @@ function spawnPlayer() {
     } else {
         playerCar = createPlayerCar(state.selectedCar);
     }
-    
+
     playerCar.userData.width = c.bodyW;
     playerCar.userData.length = c.bodyL;
-    
+
     playerCar.position.y = 0;
     playerCar.position.z = 0;
-    
+
     // Add a spotlight to the player car for better depth - ONLY AT NIGHT
     if (isNight) {
         const headLight = new THREE.SpotLight(0xffffff, 100, 50, Math.PI / 4, 0.3, 1);
@@ -721,7 +721,7 @@ function spawnTraffic() {
     const laneX = state.lanes[laneIndex];
 
     // Make sure we don't spawn on top of another car too close
-    // Check relative to spawn point (-100)
+    // Check relative to spawn point 
     const tooClose = trafficCars.some(car => {
         return Math.abs(car.position.z - (-100)) < 25 && Math.abs(car.position.x - laneX) < 1;
     });
@@ -738,11 +738,11 @@ function spawnTraffic() {
     car.position.set(laneX, 0, -100);
 
     // Random speed offset
-    car.userData.speedOffset = (Math.random() * 5); // 0 to 5 faster ? No, keep original range roughly
+    car.userData.speedOffset = (Math.random() * 5);
 
     scene.add(car);
     trafficCars.push(car);
-    // console.log("Spawned traffic", isTruck ? "Truck" : "Car");
+
 }
 
 // --- INPUT HANDLER ---
@@ -932,7 +932,7 @@ function shouldShowMobileControls() {
     const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const isSmallScreen = window.innerWidth <= 1024;
     const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
-    
+
     return isMobileUA || (hasTouch && (isSmallScreen || hasCoarsePointer));
 }
 
@@ -940,14 +940,14 @@ function initializeResponsiveControls() {
     const isMobile = shouldShowMobileControls();
     const keyboardHint = document.querySelector('.keyboard-hint');
     const mobileHint = document.querySelector('.mobile-hint');
-    
+
     if (keyboardHint) {
         keyboardHint.style.display = isMobile ? 'none' : 'flex';
     }
     if (mobileHint) {
         mobileHint.style.display = isMobile ? 'block' : 'none';
     }
-    
+
     document.getElementById('mobile-controls').style.display = 'none';
 }
 
@@ -968,7 +968,7 @@ function startGame() {
     startScreen.classList.add('hidden');
     hud.classList.remove('hidden');
     gameOverScreen.classList.add('hidden');
-    
+
     if (shouldShowMobileControls()) {
         document.getElementById('mobile-controls').style.display = 'flex';
     } else {
@@ -1230,20 +1230,20 @@ function update(dt) {
 function resize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    
+
     camera.aspect = width / height;
-    
+
     // Adjust FOV for portrait mode to see the road better
     if (width < height) {
-        camera.fov = 75; 
+        camera.fov = 75;
     } else {
         camera.fov = 60;
     }
-    
+
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
+
     // Dynamically adjust interface buttons & hints on viewport changes
     initializeResponsiveControls();
 }
