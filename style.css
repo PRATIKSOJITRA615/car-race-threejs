@@ -3,15 +3,21 @@
    ========================================================================== */
 :root {
     /* Color Palette: High-contrast neon theme suitable for arcade/sci-fi styling */
-    --primary-color: #00f2ff;       /* Electric Cyan: primary focus, accents, and highlights */
-    --secondary-color: #ff0055;     /* Hot Pink: warnings, active states, and score numbers */
-    --bg-dark: #0a0a12;             /* Deep Cyber Navy: dark background base */
-    --text-light: #ffffff;          /* Off-white: body text & primary readability */
-    
+    --primary-color: #00f2ff;
+    /* Electric Cyan: primary focus, accents, and highlights */
+    --secondary-color: #ff0055;
+    /* Hot Pink: warnings, active states, and score numbers */
+    --bg-dark: #0a0a12;
+    /* Deep Cyber Navy: dark background base */
+    --text-light: #ffffff;
+    /* Off-white: body text & primary readability */
+
     /* UI Glassmorphism Spec */
-    --glass-bg: rgba(20, 20, 30, 0.6);       /* Semi-transparent dark card fill */
-    --glass-border: rgba(255, 255, 255, 0.1); /* Subtle border for depth separation */
-    
+    --glass-bg: rgba(20, 20, 30, 0.6);
+    /* Semi-transparent dark card fill */
+    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Subtle border for depth separation */
+
     /* Typography */
     --font-main: 'Outfit', sans-serif;
 }
@@ -27,14 +33,17 @@
     user-select: none;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    position: fixed; /* Prevents scroll rubber-banding on iOS/Safari */
-    touch-action: none; /* Prevents double-tap zoom & gesture interference */
+    position: fixed;
+    /* Prevents scroll rubber-banding on iOS/Safari */
+    touch-action: none;
+    /* Prevents double-tap zoom & gesture interference */
     background-color: var(--bg-dark);
     font-family: var(--font-main);
     color: var(--text-light);
@@ -96,9 +105,7 @@ html, body {
     pointer-events: none;
 }
 
-/* ==========================================================================
-   TYPOGRAPHY & BRANDING
-   ========================================================================== */
+/* TYPOGRAPHY & BRANDING */
 .game-title {
     font-size: 5rem;
     font-weight: 800;
@@ -143,9 +150,7 @@ html, body {
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* ==========================================================================
-   BUTTONS & CONTROLS
-   ========================================================================== */
+/* BUTTONS & CONTROLS */
 .primary-btn {
     background: linear-gradient(135deg, var(--primary-color), #00c3cc);
     border: none;
@@ -375,7 +380,8 @@ html, body {
 /* Gas and Brake Pedals styling */
 .pedal-btn {
     border-radius: 10px;
-    font-size: 0; /* Hide default placeholder text */
+    font-size: 0;
+    /* Hide default placeholder text */
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2));
     border: 2px solid rgba(255, 255, 255, 0.4);
 }
@@ -420,7 +426,8 @@ html, body {
    MOBILE CONTROLS LAYOUT ADJUSTMENTS
    ========================================================================== */
 .left-controls {
-    flex-direction: column-reverse; /* Put steering row and auxiliary controls together */
+    flex-direction: column-reverse;
+    /* Put steering row and auxiliary controls together */
     align-items: flex-start;
     gap: 15px;
 }
@@ -506,6 +513,7 @@ html, body {
     .game-title {
         font-size: 2.5rem;
     }
+
     .subtitle {
         font-size: 1rem;
         margin-bottom: 2rem;
@@ -515,42 +523,64 @@ html, body {
         padding: 0.8rem 2rem;
         font-size: 1rem;
     }
+
     #hud {
         padding: 0.5rem;
     }
-    .score-container, .speed-container {
+
+    .score-container,
+    .speed-container {
         padding: 0.5rem 0.8rem;
         border-radius: 10px;
         min-width: 80px;
     }
-    .score-container .label, .speed-container .unit {
+
+    .score-container .label,
+    .speed-container .unit {
         font-size: 0.6rem;
     }
-    #score-display { font-size: 1.2rem; }
-    #speed-display { font-size: 1.5rem; }
-    
+
+    #score-display {
+        font-size: 1.2rem;
+    }
+
+    #speed-display {
+        font-size: 1.5rem;
+    }
+
     .left-controls {
         left: 10px;
         bottom: 10px;
         gap: 10px;
     }
+
     .right-controls {
         right: 10px;
         bottom: 10px;
         gap: 10px;
     }
+
     .arrow-btn {
         width: 50px;
         height: 50px;
         font-size: 1.5rem;
         background: rgba(255, 255, 255, 0.1);
     }
-    .pedal-btn.brake { width: 50px; height: 40px; }
-    .pedal-btn.gas { width: 40px; height: 80px; }
-    
+
+    .pedal-btn.brake {
+        width: 50px;
+        height: 40px;
+    }
+
+    .pedal-btn.gas {
+        width: 40px;
+        height: 80px;
+    }
+
     .action-row {
         gap: 5px;
     }
+
     .small-btn {
         width: 40px;
         height: 40px;
@@ -560,7 +590,9 @@ html, body {
 
 /* Tablet Optimizations */
 @media (min-width: 601px) and (max-width: 1024px) {
-    .game-title { font-size: 3.5rem; }
+    .game-title {
+        font-size: 3.5rem;
+    }
 }
 
 /* Game Over Screen Mobile Specific Adjustments */
@@ -569,18 +601,23 @@ html, body {
         font-size: 2.5rem;
         margin-bottom: 0.5rem;
     }
+
     .final-score-box {
         margin-bottom: 1.5rem;
     }
+
     #final-score {
         font-size: 3.5rem;
     }
+
     .button-group {
         flex-direction: column;
         width: 85%;
         gap: 0.8rem;
     }
-    .secondary-btn, .primary-btn {
+
+    .secondary-btn,
+    .primary-btn {
         width: 100%;
         padding: 1rem;
         font-size: 1.1rem;
