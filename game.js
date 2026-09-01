@@ -884,7 +884,6 @@ function honkHorn() {
             // If relativeSpeed > 0 (player faster), car moves +Z (closer to camera/player).
             // Player is stationary at Z=0? No, checking update loop:
             // envObjects move +Z. Traffic moves +Z.
-            // Player stays at Z=0 (mostly).
             // So vehicles ahead of player are at Z < 0.
             // Vehicles behind player are Z > 0 (and removed at Z>20).
 
