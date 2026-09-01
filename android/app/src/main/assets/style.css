@@ -1,0 +1,625 @@
+/* ==========================================================================
+   CSS DESIGN SYSTEM AND VARIABLES
+   ========================================================================== */
+:root {
+    /* Color Palette: High-contrast neon theme suitable for arcade/sci-fi styling */
+    --primary-color: #00f2ff;
+    /* Electric Cyan: primary focus, accents, and highlights */
+    --secondary-color: #ff0055;
+    /* Hot Pink: warnings, active states, and score numbers */
+    --bg-dark: #0a0a12;
+    /* Deep Cyber Navy: dark background base */
+    --text-light: #ffffff;
+    /* Off-white: body text & primary readability */
+
+    /* UI Glassmorphism Spec */
+    --glass-bg: rgba(20, 20, 30, 0.6);
+    /* Semi-transparent dark card fill */
+    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Subtle border for depth separation */
+
+    /* Typography */
+    --font-main: 'Outfit', sans-serif;
+}
+
+/* ==========================================================================
+   GLOBAL RESET & BASICS
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* Prevents default browser selection overlays during intense screen tapping/clicking */
+    user-select: none;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    /* Prevents scroll rubber-banding on iOS/Safari */
+    touch-action: none;
+    /* Prevents double-tap zoom & gesture interference */
+    background-color: var(--bg-dark);
+    font-family: var(--font-main);
+    color: var(--text-light);
+}
+
+/* ==========================================================================
+   PRIMARY LAYOUT CONTAINERS
+   ========================================================================== */
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+/* ==========================================================================
+   USER INTERFACE (UI) OVERLAY LAYER
+   ========================================================================== */
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Let pointer events fall through to the canvas underneath, unless overridden by buttons */
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Base style for full-screen UI panels/menus (e.g. Start Screen, Game Over Screen) */
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    transition: opacity 0.4s ease, visibility 0.4s;
+    /* Explicitly capture click events on interactive UI screens */
+    pointer-events: auto;
+}
+
+/* Hidden helper class to fade out screens gracefully */
+.screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* TYPOGRAPHY & BRANDING */
+.game-title {
+    font-size: 5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(0, 242, 255, 0.5);
+    /* Distorts title for a dynamic, racing feel */
+    transform: skew(-5deg);
+}
+
+/* Highlighting key elements using secondary neon */
+.highlight {
+    color: var(--secondary-color);
+    text-shadow: 0 0 30px rgba(255, 0, 85, 0.5);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    font-weight: 300;
+    opacity: 0.8;
+    margin-bottom: 3rem;
+    letter-spacing: 2px;
+}
+
+/* Overlay showing instructions/keyboard layout hints */
+.controls-hint {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.key {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* BUTTONS & CONTROLS */
+.primary-btn {
+    background: linear-gradient(135deg, var(--primary-color), #00c3cc);
+    border: none;
+    padding: 1.2rem 4rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--bg-dark);
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+}
+
+.primary-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(0, 242, 255, 0.6);
+}
+
+.primary-btn:active {
+    transform: scale(0.98);
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    padding: 1.2rem 3rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-light);
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    backdrop-filter: blur(5px);
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.secondary-btn:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================================================
+   HUD (HEADS UP DISPLAY)
+   ========================================================================== */
+#hud {
+    background: none;
+    backdrop-filter: none;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 2rem;
+    /* Do not block raycasting & clicks in viewport */
+    pointer-events: none;
+}
+
+.score-container,
+.speed-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.score-container .label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    margin-bottom: 0.2rem;
+}
+
+#score-display {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.speed-container {
+    align-items: flex-end;
+}
+
+#speed-display {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--text-light);
+    line-height: 0.9;
+}
+
+.speed-container .unit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+/* ==========================================================================
+   GAME OVER SCREEN
+   ========================================================================== */
+#game-over-screen h2 {
+    font-size: 4rem;
+    color: var(--secondary-color);
+    text-shadow: 0 0 30px rgba(255, 0, 85, 0.6);
+    margin-bottom: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.final-score-box {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.final-score-box .label {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+#final-score {
+    font-size: 5rem;
+    font-weight: 800;
+    background: -webkit-linear-gradient(var(--text-light), var(--primary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.button-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* ==========================================================================
+   MOBILE ONSCREEN CONTROLS
+   ========================================================================== */
+#mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    display: none;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Show controls only when viewport is under 1024px width */
+@media (max-width: 1024px) {
+    #mobile-controls {
+        display: flex;
+    }
+}
+
+.control-group {
+    pointer-events: auto;
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+/* Specific position modifiers for controls positioning overlay */
+.left-controls {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    gap: 30px;
+}
+
+.right-controls {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 20px;
+}
+
+/* On-screen control buttons base */
+.touch-btn {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: none;
+    touch-action: none;
+    user-select: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s, background 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.touch-btn:active,
+.touch-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+    border-color: #fff;
+}
+
+/* Direction Arrow Buttons styling */
+.arrow-btn {
+    width: 80px;
+    height: 80px;
+    font-size: 3rem;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Gas and Brake Pedals styling */
+.pedal-btn {
+    border-radius: 10px;
+    font-size: 0;
+    /* Hide default placeholder text */
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2));
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Brake: wider and semi-red tinted style */
+.pedal-btn.brake {
+    width: 80px;
+    height: 60px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M4 4h16v16H4z"/></svg>');
+    background-size: 30%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: rgba(255, 50, 50, 0.2);
+}
+
+/* Gas/Accelerator: taller and semi-green tinted style */
+.pedal-btn.gas {
+    width: 60px;
+    height: 120px;
+    background-color: rgba(50, 255, 100, 0.2);
+    align-self: flex-end;
+}
+
+/* Visual dot textures on pedals */
+.pedal-btn.gas::after {
+    content: '::::';
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 20px;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 5px;
+}
+
+.pedal-btn.brake::after {
+    content: ':::';
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 20px;
+    letter-spacing: 5px;
+}
+
+/* ==========================================================================
+   MOBILE CONTROLS LAYOUT ADJUSTMENTS
+   ========================================================================== */
+.left-controls {
+    flex-direction: column-reverse;
+    /* Put steering row and auxiliary controls together */
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.steer-row {
+    display: flex;
+    gap: 20px;
+}
+
+.action-row {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+}
+
+/* Auxiliary control buttons (e.g. camera, horn buttons) */
+.small-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.small-btn:active {
+    background: rgba(0, 242, 255, 0.4);
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN MEDIA QUERIES
+   ========================================================================== */
+
+/* Landscape Mobile Optimizations */
+@media (max-width: 1024px) and (orientation: landscape) {
+    #start-screen {
+        justify-content: space-evenly;
+        padding: 5px;
+        overflow: hidden;
+    }
+
+    .game-title {
+        font-size: 1.8rem;
+        margin-bottom: 0px;
+        line-height: 1;
+    }
+
+    /* Hide non-essential layout strings to fit small landscape viewports */
+    .subtitle,
+    .select-label,
+    .controls-hint {
+        display: none !important;
+    }
+
+    .car-selector-container {
+        margin-bottom: 5px;
+        width: 90%;
+        margin-top: 5px;
+    }
+
+    .car-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+    }
+
+    .car-option {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.7rem;
+        border-radius: 8px;
+    }
+
+    .primary-btn {
+        padding: 0.5rem 3rem;
+        font-size: 1.2rem;
+        margin-top: 0;
+        margin-bottom: 5px;
+        border-radius: 30px;
+    }
+}
+
+/* Portrait Mobile Optimizations */
+@media (max-width: 600px) and (orientation: portrait) {
+    .game-title {
+        font-size: 2.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .primary-btn {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+    }
+
+    #hud {
+        padding: 0.5rem;
+    }
+
+    .score-container,
+    .speed-container {
+        padding: 0.5rem 0.8rem;
+        border-radius: 10px;
+        min-width: 80px;
+    }
+
+    .score-container .label,
+    .speed-container .unit {
+        font-size: 0.6rem;
+    }
+
+    #score-display {
+        font-size: 1.2rem;
+    }
+
+    #speed-display {
+        font-size: 1.5rem;
+    }
+
+    .left-controls {
+        left: 10px;
+        bottom: 10px;
+        gap: 10px;
+    }
+
+    .right-controls {
+        right: 10px;
+        bottom: 10px;
+        gap: 10px;
+    }
+
+    .arrow-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .pedal-btn.brake {
+        width: 50px;
+        height: 40px;
+    }
+
+    .pedal-btn.gas {
+        width: 40px;
+        height: 80px;
+    }
+
+    .action-row {
+        gap: 5px;
+    }
+
+    .small-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 601px) and (max-width: 1024px) {
+    .game-title {
+        font-size: 3.5rem;
+    }
+}
+
+/* Game Over Screen Mobile Specific Adjustments */
+@media (max-width: 600px) {
+    #game-over-screen h2 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .final-score-box {
+        margin-bottom: 1.5rem;
+    }
+
+    #final-score {
+        font-size: 3.5rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        width: 85%;
+        gap: 0.8rem;
+    }
+
+    .secondary-btn,
+    .primary-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+}

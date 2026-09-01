@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- game.js -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highway Racer</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+    <!-- Three.js (Import Map for clean imports) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./lib/three.module.js",
+                "three/addons/": "./lib/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- UI Overlay -->
+        <div id="ui-layer">
+            <div id="start-screen" class="screen active">
+                <h1 class="game-title">HIGHWAY <span class="highlight">RACER</span></h1>
+                <p class="subtitle">Dodge traffic. Drive Fast. Survive.</p>
+
+                <!-- This a button for the phone and when the user will play in PC/Laptop that time use keybord key  -->
+
+                <div class="controls-hint keyboard-hint">
+                    <div class="key">W</div>
+                    <div class="key">↑</div> GAS | <div class="key">S</div>
+                    <div class="key">↓</div> BRAKE
+                    <div class="key">A</div>
+                    <div class="key">D</div> STEER
+                </div>
+                <div class="controls-hint mobile-hint" style="display: none;">
+                    Use On-Screen Pedals &amp; Arrows to Drive
+                </div>
+                <button id="start-btn" class="primary-btn">START ENGINE</button>
+            </div>
+
+            <div id="hud" class="screen hidden">
+                <div class="score-container">
+                    <div class="label">SCORE</div>
+                    <div id="score-display">0</div>
+                </div>
+                <div class="speed-container">
+                    <div id="speed-display">0</div>
+                    <div class="unit">KM/H</div>
+                </div>
+            </div>
+
+            <div id="game-over-screen" class="screen hidden">
+                <h2>CRASHED!</h2>
+                <div class="final-score-box">
+                    <div class="label">FINAL SCORE</div>
+                    <div id="final-score">0</div>
+                </div>
+                <div class="button-group">
+                    <button id="restart-btn" class="primary-btn">RACE AGAIN</button>
+                    <button id="home-btn" class="secondary-btn">HOME</button>
+                </div>
+            </div>
+
+            <!-- Mobile Controls -->
+            <div id="mobile-controls">
+                <div class="control-group left-controls">
+                    <div class="steer-row">
+                        <button id="btn-left" class="touch-btn arrow-btn">◄</button>
+                        <button id="btn-right" class="touch-btn arrow-btn">►</button>
+                    </div>
+                    <div class="action-row">
+                        <button id="btn-horn" class="touch-btn small-btn">H</button>
+                        <button id="btn-cam" class="touch-btn small-btn">C</button>
+                    </div>
+                </div>
+
+                <div class="control-group right-controls">
+                    <button id="btn-brake" class="touch-btn pedal-btn brake">BRAKE</button>
+                    <button id="btn-gas" class="touch-btn pedal-btn gas">GAS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- The game script is loaded at the end to ensure all elements are loaded -->
+    <script type="module" src="./game.js"></script>
+</body>
+
+</html>
