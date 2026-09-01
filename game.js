@@ -910,7 +910,6 @@ function honkHorn() {
         if (targetIdx >= 0 && targetIdx <= 2) {
             closestCar.userData.isChangingLane = true;
             closestCar.userData.targetLaneX = state.lanes[targetIdx];
-            //console.log("Honk! Moving car to lane", targetIdx);
         }
     }
 }
