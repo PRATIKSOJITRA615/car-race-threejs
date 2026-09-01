@@ -880,7 +880,6 @@ function honkHorn() {
         // Car must be somewhat in the same lane
         if (Math.abs(car.position.x - playerLaneX) < 1.5) {
             // Car must be ahead (smaller Z since we move forward? Wait. 
-            // Logic: Traffic is at neg Z? No, traffic spawns at -100 and moves +Z towards camera (0,0,10).
             // Wait, earlier logic: car.position.z += relativeSpeed * dt.
             // If relativeSpeed > 0 (player faster), car moves +Z (closer to camera/player).
             // Player is stationary at Z=0? No, checking update loop:
@@ -889,7 +888,6 @@ function honkHorn() {
             // So vehicles ahead of player are at Z < 0.
             // Vehicles behind player are Z > 0 (and removed at Z>20).
 
-            // So we look for cars with Z < playerCar.position.z (approx 0)
             // AND Z > -60 (range).
 
             if (car.position.z < playerCar.position.z && car.position.z > -60) {
